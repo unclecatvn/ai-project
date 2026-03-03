@@ -115,6 +115,7 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
   const [error, setError] = useState<string>("");
   const [frontmatter, setFrontmatter] = useState<FrontmatterData>({});
   const [tocItems, setTocItems] = useState<TocItem[]>([]);
+  const [activeHeadingId, setActiveHeadingId] = useState<string>("");
   const articleRef = useRef<HTMLElement | null>(null);
 
   const markdownComponents: Components = {
@@ -149,6 +150,7 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
         if (!ignore) {
           setFrontmatter(parsed.frontmatter);
           setContent(parsed.body);
+          setActiveHeadingId("");
         }
       } catch (fetchError) {
         if (!ignore) {
@@ -201,7 +203,43 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
     const target = document.getElementById(id);
     if (target) {
       target.scrollIntoView({ behavior: "smooth", block: "start" });
+      setActiveHeadingId(id);
     }
+  }, [tocItems]);
+
+  useEffect(() => {
+    if (!tocItems.length) {
+      return;
+    }
+
+    const headingElements = tocItems
+      .map((item) => document.getElementById(item.id))
+      .filter((element): element is HTMLElement => Boolean(element));
+
+    if (!headingElements.length) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          setActiveHeadingId((visible[0].target as HTMLElement).id);
+        }
+      },
+      {
+        rootMargin: "0px 0px -70% 0px",
+        threshold: [0.1, 0.5, 1],
+      },
+    );
+
+    for (const element of headingElements) {
+      observer.observe(element);
+    }
+
+    return () => observer.disconnect();
   }, [tocItems]);
 
   function handleTocClick(event: MouseEvent<HTMLAnchorElement>, id: string) {
@@ -212,6 +250,30 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
     }
     target.scrollIntoView({ behavior: "smooth", block: "start" });
     window.history.replaceState(null, "", `#${id}`);
+    setActiveHeadingId(id);
+  }
+
+  function renderTocList() {
+    return (
+      <ul className="space-y-1.5">
+        {tocItems.map((item) => (
+          <li key={item.id} className={`toc-level-${item.level}`}>
+            <a
+              href={`#${item.id}`}
+              onClick={(event) => handleTocClick(event, item.id)}
+              aria-current={activeHeadingId === item.id ? "true" : undefined}
+              className={`toc-link block rounded-md px-2 py-1.5 text-sm transition ${
+                activeHeadingId === item.id
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              {item.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
   }
 
   if (error) {
@@ -231,25 +293,17 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
       {tocItems.length > 0 ? (
         <aside className="toc-panel hidden rounded-2xl bg-white p-4 shadow-sm lg:block">
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700">Mục lục</p>
-          <nav>
-            <ul className="space-y-2">
-              {tocItems.map((item) => (
-                <li key={item.id} className={`toc-level-${item.level}`}>
-                  <a
-                    href={`#${item.id}`}
-                    onClick={(event) => handleTocClick(event, item.id)}
-                    className="toc-link block text-sm text-slate-600 hover:text-slate-900"
-                  >
-                    {item.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <nav>{renderTocList()}</nav>
         </aside>
       ) : null}
 
       <article ref={articleRef} className="markdown-content rounded-2xl bg-white p-5 shadow-sm md:p-8">
+        {tocItems.length > 0 ? (
+          <details className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4 lg:hidden">
+            <summary className="cursor-pointer text-sm font-semibold text-slate-800">Mở mục lục</summary>
+            <nav className="mt-3">{renderTocList()}</nav>
+          </details>
+        ) : null}
         {Object.keys(frontmatter).length > 0 ? (
           <section className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="mb-2 text-sm font-semibold text-slate-700">Thông tin tài liệu</p>

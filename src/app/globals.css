@@ -152,6 +152,7 @@ body {
 
 .toc-link {
   line-height: 1.45;
+  border-left: 2px solid transparent;
 }
 
 .toc-level-1 .toc-link {
@@ -170,6 +171,10 @@ body {
 .toc-level-4 .toc-link {
   padding-left: 1.3rem;
   font-size: 0.82rem;
+}
+
+.toc-link[aria-current="true"] {
+  border-left-color: #0f172a;
 }
 
 .mermaid-diagram svg {
