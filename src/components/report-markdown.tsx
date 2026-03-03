@@ -16,14 +16,28 @@ type TocItem = {
   id: string;
 };
 
+const ANCHOR_OFFSET_PX = 96;
+
 function slugify(text: string) {
   return text
+    .replace(/[Đđ]/g, (char) => (char === "Đ" ? "D" : "d"))
+    .normalize("NFKD")
+    .replace(/\p{M}+/gu, "")
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/['’`"]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
     .trim()
-    .replace(/\s+/g, "-");
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
+function safeDecodeHash(rawHash: string) {
+  try {
+    return decodeURIComponent(rawHash);
+  } catch {
+    return rawHash;
+  }
 }
 
 function MermaidBlock({ chart }: { chart: string }) {
@@ -196,15 +210,54 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
   }, [content]);
 
   useEffect(() => {
-    if (!tocItems.length || !window.location.hash) {
+    if (!tocItems.length) {
       return;
     }
-    const id = decodeURIComponent(window.location.hash.replace("#", ""));
-    const target = document.getElementById(id);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActiveHeadingId(id);
+
+    function scrollToHeadingId(id: string, behavior: ScrollBehavior) {
+      const target = document.getElementById(id);
+      if (!target) {
+        return false;
+      }
+      const top = target.getBoundingClientRect().top + window.scrollY - ANCHOR_OFFSET_PX;
+      window.scrollTo({ top: Math.max(top, 0), behavior });
+      return true;
     }
+
+    function resolveHashToId() {
+      const raw = window.location.hash.replace(/^#/, "");
+      if (!raw) {
+        return null;
+      }
+      const decoded = safeDecodeHash(raw);
+      const candidates = [decoded, raw, slugify(decoded), slugify(raw)].filter(Boolean);
+      for (const candidate of candidates) {
+        const matched = tocItems.find((item) => item.id === candidate);
+        if (matched) {
+          return matched.id;
+        }
+      }
+      return null;
+    }
+
+    const resolvedFromUrl = resolveHashToId();
+    if (resolvedFromUrl) {
+      scrollToHeadingId(resolvedFromUrl, "auto");
+      setActiveHeadingId(resolvedFromUrl);
+    } else {
+      setActiveHeadingId(tocItems[0].id);
+    }
+
+    function handleHashChange() {
+      const nextResolved = resolveHashToId();
+      if (!nextResolved) {
+        return;
+      }
+      scrollToHeadingId(nextResolved, "smooth");
+      setActiveHeadingId(nextResolved);
+    }
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, [tocItems]);
 
   useEffect(() => {
@@ -212,34 +265,40 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
       return;
     }
 
-    const headingElements = tocItems
-      .map((item) => document.getElementById(item.id))
-      .filter((element): element is HTMLElement => Boolean(element));
+    const headingElements = tocItems.map((item) => document.getElementById(item.id)).filter(Boolean) as HTMLElement[];
 
     if (!headingElements.length) {
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible.length > 0) {
-          setActiveHeadingId((visible[0].target as HTMLElement).id);
+    let ticking = false;
+    const updateActiveHeading = () => {
+      const pivot = ANCHOR_OFFSET_PX + 8;
+      let current = headingElements[0].id;
+
+      for (const heading of headingElements) {
+        const top = heading.getBoundingClientRect().top;
+        if (top <= pivot) {
+          current = heading.id;
+        } else {
+          break;
         }
-      },
-      {
-        rootMargin: "0px 0px -70% 0px",
-        threshold: [0.1, 0.5, 1],
-      },
-    );
+      }
+      setActiveHeadingId(current);
+      ticking = false;
+    };
 
-    for (const element of headingElements) {
-      observer.observe(element);
-    }
+    const onScroll = () => {
+      if (ticking) {
+        return;
+      }
+      ticking = true;
+      window.requestAnimationFrame(updateActiveHeading);
+    };
 
-    return () => observer.disconnect();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    updateActiveHeading();
+    return () => window.removeEventListener("scroll", onScroll);
   }, [tocItems]);
 
   function handleTocClick(event: MouseEvent<HTMLAnchorElement>, id: string) {
@@ -248,8 +307,9 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
     if (!target) {
       return;
     }
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.history.replaceState(null, "", `#${id}`);
+    const top = target.getBoundingClientRect().top + window.scrollY - ANCHOR_OFFSET_PX;
+    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
     setActiveHeadingId(id);
   }
 
@@ -264,7 +324,7 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
               aria-current={activeHeadingId === item.id ? "true" : undefined}
               className={`toc-link block rounded-md px-2 py-1.5 text-sm transition ${
                 activeHeadingId === item.id
-                  ? "bg-slate-900 text-white"
+                  ? "bg-slate-900! text-white!"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               }`}
             >
