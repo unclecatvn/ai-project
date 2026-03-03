@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Chiến Lược Triển Khai Trí Tuệ Nhân Tạo (AI) Tập Đoàn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --accent-primary: #0f52ba;
+            --accent-secondary: #3b82f6;
+            --accent-tertiary: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient-start: #0f52ba;
+            --gradient-end: #06b6d4;
+            --shadow-soft: 0 4px 20px rgba(15, 82, 186, 0.08);
+            --shadow-medium: 0 8px 32px rgba(15, 82, 186, 0.12);
+            --shadow-strong: 0 12px 48px rgba(15, 82, 186, 0.16);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 6rem 2rem;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(15, 82, 186, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-2%, 2%) rotate(5deg); }
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(15, 82, 186, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid rgba(15, 82, 186, 0.2);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .hero-badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.4s forwards;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease 0.6s forwards;
+        }
+
+        .hero-meta-item {
+            text-align: center;
+        }
+
+        .hero-meta-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .hero-meta-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Section Styling */
+        .section {
+            padding: 5rem 0;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.8s ease;
+        }
+
+        .section.visible .section-title {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .section.visible .card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section.visible .card:nth-child(2) { transition-delay: 0.1s; }
+        .section.visible .card:nth-child(3) { transition-delay: 0.2s; }
+        .section.visible .card:nth-child(4) { transition-delay: 0.3s; }
+        .section.visible .card:nth-child(5) { transition-delay: 0.4s; }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-icon.blue {
+            background: linear-gradient(135deg, rgba(15, 82, 186, 0.1), rgba(6, 182, 212, 0.1));
+            color: var(--accent-primary);
+        }
+
+        .card-icon.orange {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+            color: var(--warning);
+        }
+
+        .card-icon.green {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+            color: var(--success);
+        }
+
+        .card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .card-content ul {
+            margin-top: 0.5rem;
+            margin-left: 1.5rem;
+        }
+
+        .card-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--bg-secondary), rgba(255, 255, 255, 0.9));
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .section.visible .metric-card {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .section.visible .metric-card:nth-child(2) { transition-delay: 0.1s; }
+        .section.visible .metric-card:nth-child(3) { transition-delay: 0.2s; }
+        .section.visible .metric-card:nth-child(4) { transition-delay: 0.3s; }
+        .section.visible .metric-card:nth-child(5) { transition-delay: 0.4s; }
+
+        .metric-card:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-icon {
+            font-size: 1.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-context {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tables */
+        .table-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            margin: 2rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s ease;
+        }
+
+        .section.visible .table-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(15, 82, 186, 0.05), rgba(6, 182, 212, 0.05));
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: rgba(248, 250, 252, 0.8);
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .data-table td {
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            transition: background 0.2s ease;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(15, 82, 186, 0.02);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-approve {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .badge-approve .badge-dot { background: var(--success); }
+        .badge-warning .badge-dot { background: var(--warning); }
+        .badge-danger .badge-dot { background: var(--danger); }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 2rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 5rem;
+            padding-bottom: 3rem;
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.8s ease;
+        }
+
+        .section.visible .timeline-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .section.visible .timeline-item:nth-child(2) { transition-delay: 0.15s; }
+        .section.visible .timeline-item:nth-child(3) { transition-delay: 0.3s; }
+        .section.visible .timeline-item:nth-child(4) { transition-delay: 0.45s; }
+        .section.visible .timeline-item:nth-child(5) { transition-delay: 0.6s; }
+
+        .timeline-marker {
+            position: absolute;
+            left: calc(2rem - 8px);
+            top: 0;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 3px solid var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(15, 82, 186, 0.1);
+        }
+
+        .timeline-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .timeline-phase {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .timeline-period {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(15, 82, 186, 0.08);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .timeline-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .timeline-desc ul {
+            margin-top: 0.75rem;
+            margin-left: 1.25rem;
+        }
+
+        .timeline-desc li {
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-milestone {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+        }
+
+        .milestone-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .milestone-text {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        /* Mermaid Diagrams */
+        .mermaid-container {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95));
+            border-radius: 24px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(15, 82, 186, 0.15);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Risk Cards */
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .risk-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            border-left: 4px solid var(--warning);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section.visible .risk-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .risk-card.critical {
+            border-left-color: var(--danger);
+        }
+
+        .risk-card.managed {
+            border-left-color: var(--success);
+        }
+
+        .risk-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .risk-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .risk-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .risk-level {
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .risk-level.high {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .risk-level.medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .risk-level.low {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .risk-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .risk-solution {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .risk-solution strong {
+            color: var(--success);
+        }
+
+        /* Use Case Cards */
+        .usecase-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .usecase-card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .section.visible .usecase-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section.visible .usecase-card:nth-child(2) { transition-delay: 0.1s; }
+        .section.visible .usecase-card:nth-child(3) { transition-delay: 0.2s; }
+
+        .usecase-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        .usecase-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .usecase-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+        }
+
+        .usecase-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .usecase-problem {
+            background: rgba(239, 68, 68, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .problem-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--danger);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .problem-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .usecase-solution {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .usecase-solution ul {
+            margin-top: 0.75rem;
+            margin-left: 1.25rem;
+        }
+
+        .usecase-solution li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tool Assessment Cards */
+        .tools-assessment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .tool-card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section.visible .tool-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section.visible .tool-card:nth-child(2) { transition-delay: 0.1s; }
+        .section.visible .tool-card:nth-child(3) { transition-delay: 0.2s; }
+        .section.visible .tool-card:nth-child(4) { transition-delay: 0.3s; }
+        .section.visible .tool-card:nth-child(5) { transition-delay: 0.4s; }
+        .section.visible .tool-card:nth-child(6) { transition-delay: 0.5s; }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .tool-card.approved {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .tool-card.conditional {
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .tool-card.rejected {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .tool-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, rgba(15, 82, 186, 0.1), rgba(6, 182, 212, 0.1));
+        }
+
+        .tool-info {
+            flex: 1;
+        }
+
+        .tool-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .tool-category {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tool-scores {
+            display: grid;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .score-item {
+            display: grid;
+            grid-template-columns: 90px 1fr 50px;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .score-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .score-bar {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--accent-tertiary));
+            border-radius: 3px;
+            width: 0;
+            transition: width 1s ease;
+        }
+
+        .section.visible .score-fill {
+            width: var(--score);
+        }
+
+        .score-fill.warning {
+            background: linear-gradient(90deg, var(--warning), #ff9800);
+        }
+
+        .score-fill.danger {
+            background: linear-gradient(90deg, var(--danger), #f44336);
+        }
+
+        .score-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .tool-details {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tool-details p {
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-details strong {
+            color: var(--text-primary);
+        }
+
+        /* Insights */
+        .insights-container {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .insight-card {
+            display: flex;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .insight-card:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, rgba(15, 82, 186, 0.1), rgba(6, 182, 212, 0.1));
+            flex-shrink: 0;
+        }
+
+        .insight-content h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .insight-content p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .chart-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--text-primary), #0f172a);
+            color: white;
+            padding: 4rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-text {
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Scroll to top */
+        .scroll-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+            z-index: 99;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-strong);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding: 4rem 1rem; }
+            .hero-meta { gap: 1.5rem; }
+            .container { padding: 0 1rem; }
+            .section { padding: 3rem 0; }
+            .timeline { padding-left: 0; }
+            .timeline::before { left: 1rem; }
+            .timeline-item { padding-left: 3rem; }
+            .timeline-marker { left: calc(1rem - 8px); }
+            .cursor, .cursor-dot { display: none; }
+            .tools-assessment-grid { grid-template-columns: 1fr; }
+            .score-item { grid-template-columns: 80px 1fr 40px; }
+            .usecase-container { grid-template-columns: 1fr; }
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="nav-logo">AI Strategy Report</div>
+            <div class="nav-links">
+                <a href="#context" class="nav-link">Bối cảnh</a>
+                <a href="#challenges" class="nav-link">Thách thức</a>
+                <a href="#architecture" class="nav-link">Kiến trúc</a>
+                <a href="#roadmap" class="nav-link">Lộ trình</a>
+                <a href="#usecases" class="nav-link">Use Cases</a>
+                <a href="#additional-analysis" class="nav-link">Phân tích bổ sung</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                <span>Báo cáo Chiến lược 2026</span>
+            </div>
+            <h1 class="hero-title">Báo Cáo Chiến Lược Triển Khai<br>Trí Tuệ Nhân Tạo (AI) Tập Đoàn</h1>
+            <p class="hero-subtitle">
+                Cung cấp định hướng kiến trúc, lộ trình và phân tích giải pháp công nghệ để ứng dụng AI sâu rộng, an toàn và tối ưu chi phí vào vận hành doanh nghiệp đa quốc gia.
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <div class="hero-meta-value">300K+</div>
+                    <div class="hero-meta-label">Khách hàng</div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-value">300</div>
+                    <div class="hero-meta-label">Nhân sự</div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-value">14</div>
+                    <div class="hero-meta-label">Chuyên viên IT</div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-value">5-6</div>
+                    <div class="hero-meta-label">Odoo Instances</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 1: Business Context -->
+    <section class="section" id="context">
+        <div class="container">
+            <h2 class="section-title">1. Bối cảnh Doanh nghiệp</h2>
+            <p class="section-subtitle">Tổng quan về quy mô, mô hình và hệ sinh thái công nghệ hiện tại.</p>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">👥</span>
+                        <span class="metric-label">Quy mô Nhân sự</span>
+                    </div>
+                    <div class="metric-value">~300</div>
+                    <div class="metric-context">Nhân sự trực tiếp quản lý hơn 300,000 khách hàng (phần lớn là cá nhân)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">🌐</span>
+                        <span class="metric-label">Mô hình Kinh doanh</span>
+                    </div>
+                    <div class="metric-value">Global</div>
+                    <div class="metric-context">Thương mại điện tử kết hợp xuất nhập khẩu bán lẻ trên toàn cầu (Mỹ, Nhật, Hàn, Thái Lan, Việt Nam) với hệ thống fulfillment tại từng thị trường</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">💻</span>
+                        <span class="metric-label">Đội ngũ IT</span>
+                    </div>
+                    <div class="metric-value">14</div>
+                    <div class="metric-context">2 Data, 2 AI, 2 Dev core, 1 Infra, 4 BA</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-icon">🔄</span>
+                        <span class="metric-label">Biến động Sắp tới</span>
+                    </div>
+                    <div class="metric-value">5-6</div>
+                    <div class="metric-context">Dự án tái cấu trúc hạ tầng CNTT sẽ phân nhỏ lõi Odoo từ 1 hệ thống tập trung thành 5-6 instances độc lập theo từng pháp nhân quốc gia</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon blue">🏪</div>
+                    <h3 class="card-title">Hệ sinh thái Công nghệ</h3>
+                </div>
+                <div class="card-content">
+                    Odoo đang là trục xương sống (ERP) cho quy trình Mua - Bán - Kho - Vận tải - Tài chính kế toán. Các hệ thống tiếp thị và tương tác bên ngoài gồm Facebook, Tiktok, Shopee, Lazada tích hợp qua Botcake/Pancake.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Core Challenges -->
+    <section class="section" id="challenges">
+        <div class="container">
+            <h2 class="section-title">2. Vấn đề Cốt lõi & Thách thức</h2>
+            <p class="section-subtitle">Biến động về cấu trúc ERP dẫn đến hệ quả pháp lý và hạ tầng dữ liệu nghiêm trọng nếu vội vàng ứng dụng AI:</p>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">📊</div>
+                    <h3 class="card-title">1. Phân mảnh dữ liệu (Data Fragmentation)</h3>
+                </div>
+                <div class="card-content">
+                    Sự phân tách thành nhiều instance Odoo triệt tiêu tính "Single Source of Truth". Kết nối AI trực tiếp vào từng Odoo instance sẽ gây ra sai lệch báo cáo (AI hallucination) khi suy luận chéo quốc gia.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">📈</div>
+                    <h3 class="card-title">2. Kích thước Dữ liệu (Curse of Dimensionality)</h3>
+                </div>
+                <div class="card-content">
+                    Các mô hình ngôn ngữ lớn (LLM) không thể tiếp nhận trọn vẹn mô hình cơ sở dữ liệu quan hệ phức tạp, hàng tỷ bản ghi với hàng nghìn bảng của Odoo một cách chính xác.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">🔒</div>
+                    <h3 class="card-title">3. Bảo mật và Định danh (PII & Role-Based Access Control)</h3>
+                </div>
+                <div class="card-content">
+                    Dữ liệu kế toán, tài chính và hồ sơ cá nhân của khách hàng sẽ bị bộc lộ nếu cấp quyền cho Public LLM API đọc thẳng database không qua cơ chế ẩn danh. Tràn bộ nhớ đa người dùng (Context Bleed) có thể khiến nhân sự cấp dưới truy cập được số liệu của ban giám đốc.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Architecture -->
+    <section class="section" id="architecture">
+        <div class="container">
+            <h2 class="section-title">3. Thiết kế Kiến trúc & Tách Lớp Hệ Thống</h2>
+            <p class="section-subtitle">Thiết kế hệ thống tuân thủ nghiêm ngặt mô hình <strong>Trục bánh xe & Nan hoa (Hub-and-Spoke)</strong>, tuân thủ nguyên lý tách biệt Tư duy và Thực thi (Decoupled Brain and Hands).</p>
+
+            <div class="mermaid-container">
+                <div class="mermaid">
+flowchart TD
+    subgraph EXT["🌐 Hệ Sinh Thái Bên Ngoài (External / 3rd Party SaaS)"]
+        Client[Khách hàng End-user]
+        Channels[Social Media/Ads]
+        Botcake[Botcake/Pancake - Chat]
+        VoiceSaaS[Voice API - Twilio/Bland.ai]
+    end
+
+    subgraph INT["🏢 Hệ Sinh Thái Nội Bộ (Self-Hosted / On-Premise)"]
+        
+        subgraph UI["👤 Interaction & UI Layer"]
+            Employee[Nhân viên Nội bộ]
+            OpenWebUI[Giao diện Mở OpenWebUI]
+        end
+
+        subgraph GATEWAY["🎯 Trạm Điều Phối & AI Gateway (Orchestrator Hub)"]
+            ZC[ZeroClaw - Runtime Kernel/Sandboxing]
+            Scrubber[Trạm Ẩn danh PII Presidio]
+            Cache[Bộ nhớ đệm Ngữ nghĩa Redis/Qdrant]
+            Dify[Dify.AI - RAG & Low-code Workflow]
+            n8n[n8n - Node Integration/Logic]
+        end
+
+        subgraph EXEC["⚙️ Tầng Thực Thi (Execution Hands)"]
+            LocalWorkers[ZeroClaw Local Nodes]
+        end
+
+        subgraph DATA["💾 Nền Tảng Dữ Liệu Hợp Nhất (Data Foundation)"]
+            OdooInstances[(Lõi Odoo: VN, US, JP...)]
+            DataLake[(Data Lake)]
+            DWH[Data Warehouse]
+            Marts[(Data Marts / Flattened SQL Views)]
+        end
+        
+        OdooInstances --> DataLake --> DWH --> Marts
+        Marts -->|Read-only SQL| Dify
+        
+        Employee <--> OpenWebUI <--> ZC
+        ZC <--> Scrubber <--> Cache <--> Dify <--> n8n <--> LocalWorkers
+    end
+
+    Client --> Channels --> Botcake
+    Client --> VoiceSaaS
+    n8n <-->|API Hẹp| OdooInstances
+    
+    %% Luồng 1 chiều: Dify.AI → External Platforms (API Outbound)
+    Dify -->|API/Webhook| Botcake
+    Dify -->|API/Webhook| VoiceSaaS
+    
+    %% Luồng dữ liệu: External Platforms → Data Lake (trực tiếp)
+    Botcake -->|Events/Logs| DataLake
+    VoiceSaaS -->|Call Records| DataLake
+    Channels -->|Analytics| DataLake
+
+    style EXT fill:#fcf3ef,stroke:#c84b31,stroke-width:2px,stroke-dasharray: 4 4
+    style INT fill:#f1f8ff,stroke:#0f52ba,stroke-width:2px,stroke-dasharray: 4 4
+    style GATEWAY fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style DATA fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon green">💡</div>
+                    <h3 class="card-title">Nguyên lý cốt lõi</h3>
+                </div>
+                <div class="card-content">
+                    <strong>Tách biệt luồng điều khiển và luồng dữ liệu:</strong><br><br>
+                    • <strong>Luồng điều khiển (Control Flow):</strong> Dify.AI gửi API/Webhook 1 chiều → External Platforms (Botcake, VoiceSaaS) để điều phối hội thoại và tác vụ.<br><br>
+                    • <strong>Luồng dữ liệu (Data Flow):</strong> External Platforms đẩy dữ liệu trực tiếp → Data Lake (bypass Gateway) để đảm bảo hiệu suất và tránh nghẽn cổ chai.<br><br>
+                    • <strong>Xử lý nội bộ:</strong> Data được làm phẳng (Flattened) tại Data Marts trước khi AI Gateway đọc qua SQL Read-only. ZeroClaw cô lập runtime, Odoo giữ vai trò System of Record.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Tech Due Diligence -->
+    <section class="section" id="duediligence">
+        <div class="container">
+            <h2 class="section-title">4. Báo cáo Thẩm định Công nghệ (Tech Due Diligence)</h2>
+            <p class="section-subtitle">Lựa chọn công cụ quyết định tính sống còn của hạ tầng. Dưới đây là phân tích các nền tảng sau quá trình Due Diligence.</p>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">4.1 Khối Điều phối & Hạt nhân (Orchestration & Kernel)</h3>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nền tảng</th>
+                            <th>Chức năng cốt lõi</th>
+                            <th>Rủi ro</th>
+                            <th>Đánh giá & Khuyến nghị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Dify.AI</strong></td>
+                            <td>LLMOps & RAG Engine. Thiết lập luồng workflow kéo-thả.</td>
+                            <td>Rủi ro rò rỉ cấu hình hệ thống nếu expose port trực tiếp.</td>
+                            <td><span class="badge badge-approve"><span class="badge-dot"></span>Chấp thuận</span> - Đóng vai trò làm "Bộ não". Modular tốt, Model-agnostic (không bị khóa vào OpenAI hay Claude).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ZeroClaw</strong></td>
+                            <td>Agent Runtime Kernel viết bằng Rust. Dùng làm Sandbox.</td>
+                            <td>Lương kỹ sư Rust cao, khó tuyển dụng.</td>
+                            <td><span class="badge badge-approve"><span class="badge-dot"></span>Chấp thuận</span> - Làm "Lưới bảo vệ" đầu cuối nhờ tính năng chặn RCE và tiêu hao cực ít RAM (&lt; 5MB).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenClaw</strong></td>
+                            <td>Autonomous Agent có khả năng tự thao tác Terminal/Browser.</td>
+                            <td>Lỗ hổng CVE nghiêm trọng (Command Injection, RCE). Phân quyền yếu.</td>
+                            <td><span class="badge badge-danger"><span class="badge-dot"></span>Loại bỏ (Reject)</span> khỏi Production. Chỉ cách ly dùng cho R&D đơn lẻ.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">4.2 Khối Công cụ & Tính năng Bổ trợ (Tools & Integrations)</h3>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nền tảng</th>
+                            <th>Chức năng cốt lõi</th>
+                            <th>Rủi ro</th>
+                            <th>Đánh giá & Khuyến nghị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Odoo AI</strong></td>
+                            <td>Tính năng AI nguyên bản tích hợp sẵn trong Odoo ERP.</td>
+                            <td>Kiến trúc Thin Wrapper, phụ thuộc LLM ngoài. Không có Vector DB nội tại.</td>
+                            <td><span class="badge badge-warning"><span class="badge-dot"></span>Chấp thuận có điều kiện</span> - Chỉ dùng cho System of Record và soạn thảo văn bản tĩnh. Không dùng làm não bộ điều phối.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Manus AI</strong></td>
+                            <td>Agentic AI (SaaS) trỏ chuột, lướt web, làm phân tích tự chủ.</td>
+                            <td>SaaS của Meta. Rủi ro mất PII khi tải dữ liệu lên hạ tầng đám mây đóng.</td>
+                            <td><span class="badge badge-warning"><span class="badge-dot"></span>Chấp thuận có điều kiện</span> - Tuyệt đối không giao quyền API vào Database. Chỉ dùng cho R&D và truy vấn dữ liệu web công khai.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Perplexity</strong></td>
+                            <td>AI Search Engine có trích dẫn nguồn thực để nghiên cứu báo cáo.</td>
+                            <td>Rủi ro ảo giác thông tin và rò rỉ dữ liệu ở bản Free.</td>
+                            <td><span class="badge badge-warning"><span class="badge-dot"></span>Chấp thuận có điều kiện</span> - Mua bản Enterprise Pro ($40/month) để đáp ứng SOC2. Thay thế việc tự xây mô hình RAG nội bộ tốn kém.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Section 5: Use Cases -->
+    <section class="section" id="usecases">
+        <div class="container">
+            <h2 class="section-title">5. Danh Mục Các Use Case Trực Tiếp (Applied Use Cases)</h2>
+            <p class="section-subtitle">Ứng dụng kiến trúc trên, tự động hóa được chia nhỏ thành các cụm tính năng thực tiễn có ROI cao.</p>
+
+            <!-- Use Case 1: Internal Ops (Đưa lên đầu) -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon blue">⚙️</div>
+                    <h3 class="card-title">5.1 Vận hành Nội bộ & Trợ lý AI (Internal Operations)</h3>
+                </div>
+                <div class="card-content">
+                    <p><strong>Pain Point:</strong> Nhân viên mất thời gian tìm kiếm quy định nội bộ, tài liệu hướng dẫn rải rác. Sales quên nhập liệu, không đọc kỹ lịch sử báo cáo dẫn đến tư vấn lặp lại. Giám đốc thiếu số liệu "sống" từ nhiều nguồn.</p>
+                    <br>
+                    <p><strong>Giải pháp gồm 2 hệ thống chính:</strong></p>
+                    <br>
+                    
+                    <h4 style="color: var(--primary-red); margin: 16px 0 8px 0;">🔹 UC-01: Chatbot RAG Quy định & Kiến thức Nội bộ</h4>
+                    <p><strong>Mô tả:</strong> Hệ thống RAG (Retrieval-Augmented Generation) truy cập toàn bộ tài liệu nội bộ: quy định công ty, hướng dẫn sử dụng phần mềm, FAQ nhân sự, quy trình ISO, tài liệu đào tạo.</p>
+                    <ul>
+                        <li><strong>Nguồn dữ liệu:</strong> PDF quy định, Word hướng dẫn, Confluence/Wiki nội bộ, Video training transcript</li>
+                        <li><strong>Truy cập:</strong> Nhân viên chat qua OpenWebUI hoặc Slack/Teams integration</li>
+                        <li><strong>Phân quyền:</strong> Nhân viên thường chỉ xem quy định chung, Trưởng phòng xem thêm quy trình phê duyệt, HR xem hồ sơ nhân sự</li>
+                        <li><strong>Ví dụ:</strong> "Cho tôi biết quy trình xin nghỉ phép 3 ngày?" → AI trích dẫn đúng điều 4.2 từ Nội quy lao động 2024 + form mẫu đính kèm</li>
+                    </ul>
+                    <br>
+                    
+                    <h4 style="color: var(--primary-red); margin: 16px 0 8px 0;">🔹 UC-02: Chatbot Quản trị & Vận hành (Data Warehouse/Dashboard)</h4>
+                    <p><strong>Mô tả:</strong> AI Agent kết nối trực tiếp Data Warehouse/Data Marts để trả lời câu hỏi kinh doanh, tạo báo cáo, và phân tích dữ liệu theo yêu cầu.</p>
+                    <ul>
+                        <li><strong>Dữ liệu nguồn:</strong> SQL Views đã làm phẳng từ Odoo (<code>v_ai_sales</code>, <code>v_ai_inventory</code>, <code>v_ai_crm</code>)</li>
+                        <li><strong>Chức năng:</strong> Tự động tóm tắt tệp khách, chấm điểm Lead, phân tích xu hướng, tạo báo cáo tự động</li>
+                        <li><strong>ChatOps:</strong> Sales chat "Vừa gặp khách B chốt deal 50tr" → AI hiểu ý định → Gọi API CRM → Cập nhật Deal real-time</li>
+                        <li><strong>Ví dụ:</strong> "So sánh doanh thu Q1 năm nay vs năm ngoái theo khu vực" → AI truy vấn SQL → Tạo biểu đồ → Giải thích insight</li>
+                    </ul>
+                    <br>
+                    
+                    <p><strong>Các Use Case hỗ trợ bổ sung:</strong></p>
+                    <ul>
+                        <li><strong>UC-03: Auto Onboarding CRM</strong> - Tick deal "Won", AI tự tạo account, gửi email Welcome, add Zalo, đặt lịch reminder chăm sóc</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Use Case 2: Multi-channel Communication -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon blue">💬</div>
+                    <h3 class="card-title">5.2 Giao tiếp Đa kênh & Chăm sóc khách hàng (FB Messenger)</h3>
+                </div>
+                <div class="card-content">
+                    <p><strong>Pain Point:</strong> Chatbot thế hệ cũ trả lời tĩnh, làm mất lòng khách và tỷ lệ hoàn đơn cao.</p>
+                    <br>
+                    <p><strong>Giải pháp (UC-01 & UC-02):</strong> Onboarding khách qua kịch bản tự động theo các ngày D+0, D+3, D+7. Phân luồng kịch bản rẽ nhánh theo tệp Khách Mới (tập trung chốt Sale) và Khách Cũ (tập trung Resale/Cross-sell).</p>
+                    <br>
+                    <p><strong>Ngắt mạch Khủng hoảng (UC-03):</strong> Tích hợp Sentiment Analysis. Khi khách chửi bới, AI nhận diện và buộc dừng kịch bản bán hàng, xin lỗi và Handoff (Chuyển người thật) ngay lập tức. Cung cấp Dify RAG để trả lời linh hoạt khách hỏi xoáy ngoài kịch bản (FAQ).</p>
+                    <br>
+                    <p><strong>Chi tiết Use Case:</strong></p>
+                    <ul>
+                        <li><strong>UC-01: Onboarding Tự động Sau mua (Sale -> Retention)</strong> - AI tự động nhắn tin hướng dẫn sử dụng (HDSD) sau khi nhận hàng. D+0: Gửi lời cảm ơn + Video HDSD ngắn gọn. D+3: Hỏi thăm trải nghiệm. D+7: Khen ngợi khách hàng chăm chỉ.</li>
+                        <li><strong>UC-02: Phân luồng Sale/Resale</strong> - Dify + n8n tự động nhận diện khách hàng. Khách Mới: Kịch bản tập trung vào USP sản phẩm, cam kết hiệu quả. Khách Cũ: Kịch bản hỏi thăm sức khỏe, nhắc lịch tái khám/tái mua. Khách VIP: Kịch bản chăm sóc đặc biệt.</li>
+                        <li><strong>UC-03: Xử lý Khiếu nại & Feedback</strong> - AI nhận diện cảm xúc tiêu cực và phản ứng khôn ngoan. Sentiment Analysis phát hiện từ khóa "ghét", "lừa đảo", "không hiệu quả". AI xin lỗi chân thành, ngừng kịch bản bán hàng, Handoff ngay cho Quản lý.</li>
+                        <li><strong>UC-04: Tư vấn Ngoài Kịch bản</strong> - Dify sử dụng RAG (Kiến thức doanh nghiệp) để trả lời. Tra cứu tài liệu nội bộ (PDF, Word, Web). Trả lời đúng trọng tâm.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Section 6: Master Roadmap -->
+    <section class="section" id="roadmap">
+        <div class="container">
+            <h2 class="section-title">6. Lộ trình Triển khai Tổng Thể (Master Roadmap)</h2>
+            <p class="section-subtitle">Thực thi 3 giai đoạn cho toàn năm (đến tháng 12), trong đó Giai đoạn 0 và 1 là hai chặng nặng nhất để vừa xây nền tảng vừa tạo hiệu quả nội bộ sớm.</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-phase">Giai đoạn 0</div>
+                        <h3 class="timeline-title">Xây nền Kiến trúc & Dữ liệu</h3>
+                        <div class="timeline-period">📅 Tháng 3-5</div>
+                        <div class="timeline-desc">
+                            <ul>
+                                <li><strong>Mức tải:</strong> Rất cao (xây nền kiến trúc + dữ liệu đa instance)</li>
+                                <li>Khởi tạo Data Warehouse, Data Marts</li>
+                                <li>Deploy Dify & ZeroClaw trên môi trường Dev nội bộ</li>
+                            </ul>
+                        </div>
+                        <div class="timeline-milestone">
+                            <div class="milestone-label">🎯 Nghiệm thu</div>
+                            <div class="milestone-text">AI Data Analyst trả lời chính xác luồng dữ liệu Sales qua Chatbot nội bộ trong dưới 5 giây. Không bị ảo giác (Hallucination).</div>
+                        </div>
+                        <div class="timeline-desc">
+                            <p><strong>Nguồn lực dự kiến (từ team hiện tại):</strong></p>
+                            <ul>
+                                <li>Dev: 2 Senior</li>
+                                <li>Data: 2 người (1 Senior, 1 Middle)</li>
+                                <li>AI: 1 Senior + 1 Middle</li>
+                                <li>Infra/Security: 1 Senior</li>
+                                <li>BA/Support: 1 Middle</li>
+                                <li>QA/QC: 1 Middle</li>
+                            </ul>
+                            <p><strong>Đề xuất bổ sung (nếu thiếu):</strong> Thuê ngoài ngắn hạn 1 Data Engineer mức 0.8-1.0 FTE trong 8 tuần đầu để tăng tốc ETL, chuẩn hóa dữ liệu đa instance và giảm tải cho team Data hiện hữu.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-phase">Giai đoạn 1</div>
+                        <h3 class="timeline-title">Chatbot Nội bộ cho Quy định và Quản trị Vận hành</h3>
+                        <div class="timeline-period">📅 Tháng 6-9</div>
+                        <div class="timeline-desc">
+                            <ul>
+                                <li><strong>Mức tải:</strong> Cao (vừa triển khai hệ thống, vừa tối ưu adoption nội bộ)</li>
+                                <li>Triển khai Chatbot RAG Quy định & Kiến thức Nội bộ cho toàn công ty</li>
+                                <li>Triển khai Chatbot Quản trị/Vận hành đọc dữ liệu từ Data Warehouse/Data Marts</li>
+                                <li>Tích hợp OpenWebUI cho nhân sự nội bộ theo RBAC từng phòng ban</li>
+                                <li>Thiết lập cơ chế trích dẫn nguồn và audit log cho mọi câu trả lời AI</li>
+                            </ul>
+                        </div>
+                        <div class="timeline-milestone">
+                            <div class="milestone-label">🎯 Nghiệm thu</div>
+                            <div class="milestone-text">Tối thiểu 70% truy vấn nội bộ được AI trả lời đúng có trích dẫn nguồn, giảm ít nhất 30% thời gian tìm quy định và tổng hợp báo cáo vận hành.</div>
+                        </div>
+                        <div class="timeline-desc">
+                            <p><strong>Nguồn lực dự kiến (từ team hiện tại):</strong></p>
+                            <ul>
+                                <li>Dev (Odoo): 0.3-0.5 FTE (vai trò cầu nối API hẹp, RBAC mapping, không phải lực lượng chính)</li>
+                                <li>AI: 2 người (1 Senior, 1 Middle)</li>
+                                <li>Data: 1 Senior</li>
+                                <li>BA/Support: 2 Middle</li>
+                                <li>QA/QC: 1 Middle</li>
+                                <li>Infra/Security: 1.0 FTE trong 4-6 tuần đầu (setup Gateway/RBAC/Audit), sau đó giảm còn 0.5 FTE</li>
+                                <li>Capacity vận hành BAU: giữ lại 20-30% tải Dev cho bugfix và vận hành Odoo hiện hữu</li>
+                            </ul>
+                            <p><strong>Đề xuất bổ sung (nếu thiếu):</strong> Bổ sung 1 Integration Engineer (Node/n8n/Dify) part-time trong 3-4 tháng để gánh phần tích hợp ngoài Odoo stack, đồng thời bổ sung 1 SME nghiệp vụ bán thời gian từ khối Pháp chế/HR/Kế toán để chuẩn hóa bộ tri thức và quy tắc trả lời của chatbot nội bộ.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-phase">Giai đoạn 2</div>
+                        <h3 class="timeline-title">Kịch bản AI Resale & Chăm sóc khách hàng tái mua</h3>
+                        <div class="timeline-period">📅 Tháng 10-12</div>
+                        <div class="timeline-desc">
+                            <ul>
+                                <li><strong>Mức tải:</strong> Trung bình (mở rộng, tối ưu và scale theo KPI)</li>
+                                <li>Xây kịch bản AI resale theo phân khúc khách (mới/cũ/VIP/ngủ quên)</li>
+                                <li>Tự động chăm sóc theo mốc D+0, D+3, D+7 và trigger theo hành vi mua hàng</li>
+                                <li>Tích hợp n8n + Dify + Botcake cho flow nhắn tin và handoff sang nhân viên khi confidence thấp</li>
+                                <li>Đo lường tỉ lệ phản hồi, tỉ lệ tái mua, doanh thu từ nhóm khách đã chăm sóc bởi AI</li>
+                            </ul>
+                        </div>
+                        <div class="timeline-milestone">
+                            <div class="milestone-label">🎯 Nghiệm thu</div>
+                            <div class="milestone-text">Tăng tối thiểu 15-20% tỉ lệ resale trên nhóm khách mục tiêu, đồng thời giảm ít nhất 25% tải nhắn tin thủ công cho đội CSKH.</div>
+                        </div>
+                        <div class="timeline-desc">
+                            <p><strong>Nguồn lực dự kiến (từ team hiện tại):</strong></p>
+                            <ul>
+                                <li>AI: 1 Senior + 1 Middle (giữ ổn định kịch bản và tối ưu conversion)</li>
+                                <li>BA/Support: 1-2 Middle (ưu tiên tracking KPI và tinh chỉnh workflow)</li>
+                                <li>Dev: 0.5-1 Senior (tập trung tích hợp điểm nghẽn và cải tiến nhỏ)</li>
+                                <li>Data: 1 Middle</li>
+                                <li>QA/QC: 1 Middle</li>
+                                <li>Customer Experience (phối hợp nghiệp vụ): 1-2 key users</li>
+                                <li>Capacity vận hành BAU: duy trì 20-30% tải Dev để tránh dồn backlog từ hệ thống hiện tại</li>
+                            </ul>
+                            <p><strong>Đề xuất bổ sung (nếu thiếu):</strong> Nếu cần scale nhanh kịch bản đa thị trường, bổ sung 1 Content Strategist/CRM Specialist part-time để thiết kế message matrix theo từng quốc gia.</p>
+                            <p><strong>Phạm vi năm nay:</strong> Voice AI được đưa vào danh sách <em>deferred</em>, đánh giá lại ở năm tài chính kế tiếp sau khi 2 trụ cột chính đạt KPI.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Section 7: Tech Due Diligence Details -->
+    <section class="section" id="techdetails">
+        <div class="container">
+            <h2 class="section-title">7. Đánh giá Công cụ Chi tiết (Tech Due Diligence)</h2>
+            <p class="section-subtitle">Rủi ro và cách xử lý từng công cụ:</p>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon green">🛡️</div>
+                    <h3 class="card-title">7.1. Orchestration & Sandbox</h3>
+                </div>
+                <div class="card-content">
+                    <p><strong>Dify.AI (Approve):</strong> Lỗi sơ đẳng là cấu hình Docker mặc định dễ bị bypass. <strong>Giải pháp:</strong> Đặt Dify sau API Gateway (Nginx/Kong). Đặt Random password cho Redis/PostgreSQL. Mở RBAC nghiêm ngặt.</p>
+                    <br>
+                    <p><strong>ZeroClaw (Approve):</strong> Nút thắt là con người. Rust an toàn nhưng khó học. <strong>Giải pháp:</strong> Giao Rust cho Core Team. Đẩy logic kinh doanh sang Python/Node.js qua microservices.</p>
+                    <br>
+                    <p><strong>OpenClaw (Reject ở Production):</strong> Lỗi bảo mật nặng (CVE RCE, Command injection). <strong>Giải pháp:</strong> Chỉ dùng cho R&D. Buộc chạy trong Air-gapped Sandbox.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon green">🔧</div>
+                    <h3 class="card-title">7.2. Feature Integrations</h3>
+                </div>
+                <div class="card-content">
+                    <p><strong>Manus AI (Conditional Approve):</strong> Rủi ro rò rỉ dữ liệu nội bộ lên cloud của Meta. <strong>Giải pháp:</strong> Chỉ cho phép tra cứu web công cộng. Cấm đưa PII vào prompt. Chặn quyền commit code trực tiếp (bắt buộc Human Review).</p>
+                    <br>
+                    <p><strong>Perplexity AI (Conditional Approve):</strong> Cấm dùng bản Free. Nó lấy dữ liệu để train AI. <strong>Giải pháp:</strong> Mua bản Enterprise Pro ($40/tháng) để tuân thủ SOC2. Vẫn cần người thật kiểm tra lại trích dẫn (SOP).</p>
+                    <br>
+                    <p><strong>Odoo AI (Conditional Approve):</strong> Odoo là System of Record tốt, nhưng AI tích hợp chậm chạp (1 năm update 1 lần). <strong>Giải pháp:</strong> Chỉ dùng Odoo để chứa cục data sạch. Rút logic AI sang Middleware.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 8: Technical Debt -->
+    <section class="section" id="techdebt">
+        <div class="container">
+            <h2 class="section-title">8. Nợ Kỹ Thuật & Giới Hạn Cứng</h2>
+            <p class="section-subtitle">Bốn nguyên tắc ngắt mạch bắt buộc:</p>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">1️⃣</div>
+                    <h3 class="card-title">Rào Cản PII</h3>
+                </div>
+                <div class="card-content">
+                    Đặt trạm Scrubber Processor (Presidio/Local NLP) ở cửa ngõ. Mọi chuỗi nhạy cảm phải bị đè thành <code>[REDACTED]</code> trước khi chạm internet.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">2️⃣</div>
+                    <h3 class="card-title">Đánh Dấu Độ Trễ</h3>
+                </div>
+                <div class="card-content">
+                    Gắn biến <code>last_synced_time</code> vào mọi prompt quản lý. Nếu quá trình đồng bộ Odoo -> DWH trễ quá 1 giờ: cấm AI ra lệnh liên quan dòng tiền.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">3️⃣</div>
+                    <h3 class="card-title">Cô Lập Môi Trường</h3>
+                </div>
+                <div class="card-content">
+                    Không cấp đặc quyền root cho bất kỳ Agent nào. Giới hạn Manus AI ở mức Market Research mù.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">4️⃣</div>
+                    <h3 class="card-title">Cô Lập Đặc Quyền Odoo</h3>
+                </div>
+                <div class="card-content">
+                    AI chỉ được phép ghi qua các endpoint hẹp của n8n. Không giao quyền Super Admin. <strong>RBAC thủng là dừng dự án.</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 9: Crisis Management -->
+    <section class="section" id="crisis">
+        <div class="container">
+            <h2 class="section-title">9. Kịch Bản Khủng hoảng (Stress-Testing Protocols)</h2>
+            <p class="section-subtitle">Cách xử lý cho 5 điểm mù chết người của hệ thống.</p>
+
+            <div class="risk-grid">
+                <div class="risk-card critical">
+                    <div class="risk-header">
+                        <span class="risk-title">🔌 9.1. Đứt Cáp, Dữ liệu Lệch Pha</span>
+                        <span class="risk-level high">HIGH</span>
+                    </div>
+                    <div class="risk-desc">
+                        <strong>Vấn đề:</strong> Mất đồng bộ Odoo và Data Warehouse. AI đọc data cũ, báo sai giá.
+                    </div>
+                    <div class="risk-solution">
+                        <strong>Cách xử lý:</strong> Khớp SLA. Trễ tín hiệu quá 15 phút, ngắt RAG. Biến <code>[fresh_validate]</code> nếu fail, AI phải trả lời: "Hệ thống bảo trì, tôi chuyển máy cho CSKH." Bắt buộc Handoff.
+                    </div>
+                </div>
+
+                <div class="risk-card critical">
+                    <div class="risk-header">
+                        <span class="risk-title">🔥 9.2. Đốt Token API</span>
+                        <span class="risk-level high">HIGH</span>
+                    </div>
+                    <div class="risk-desc">
+                        <strong>Vấn đề:</strong> Lưu lượng tăng gấp 10 đợt Flash Sale. Token API cạn tiền.
+                    </div>
+                    <div class="risk-solution">
+                        <strong>Cách xử lý:</strong> Bật Semantic Caching trước cổng Dify. Các câu lặp lại ("giá sao", "phí ship") lấy thẳng từ Cache, tốn 0đ. LLM (GPT-4o/Claude) chỉ giải quyết các truy vấn yêu cầu suy luận phức tạp.
+                    </div>
+                </div>
+
+                <div class="risk-card critical">
+                    <div class="risk-header">
+                        <span class="risk-title">💧 9.3. Rò Rỉ Data Qua Cloud</span>
+                        <span class="risk-level high">HIGH</span>
+                    </div>
+                    <div class="risk-desc">
+                        <strong>Vấn đề:</strong> Sales ném lịch sử mua hàng, thẻ tín dụng của VIP lên cửa sổ chat AI.
+                    </div>
+                    <div class="risk-solution">
+                        <strong>Cách xử lý:</strong> Chạy PII Scrubber Analyzer offline làm tầng đánh chặn. Thông tin thẻ bị cào sạch trước khi đến server OpenAI. Xoay API key định kỳ. Khóa IP đầu ra.
+                    </div>
+                </div>
+
+                <div class="risk-card">
+                    <div class="risk-header">
+                        <span class="risk-title">⏱️ 9.4. Độ Trễ Giọng nói</span>
+                        <span class="risk-level medium">MED</span>
+                    </div>
+                    <div class="risk-desc">
+                        <strong>Vấn đề:</strong> Xử lý mất 5 giây (STT -> LLM -> TTS). Khách tưởng cúp máy.
+                    </div>
+                    <div class="risk-solution">
+                        <strong>Cách xử lý:</strong> Đổi HTTP standard sang WebSocket. Khóa độ trễ trần ở mức 1.5 giây. Cài Silence Detection. Nếu mạng lag, phát audio đệm thu sẵn: "Tôi đang kiểm tra..." để giữ chân khách.
+                    </div>
+                </div>
+
+                <div class="risk-card">
+                    <div class="risk-header">
+                        <span class="risk-title">👤 9.5. Chéo Dữ liệu Phân Quyền</span>
+                        <span class="risk-level medium">MED</span>
+                    </div>
+                    <div class="risk-desc">
+                        <strong>Vấn đề:</strong> Nhân viên Marketing rút được báo cáo lợi nhuận của Giám đốc thông qua RAG.
+                    </div>
+                    <div class="risk-solution">
+                        <strong>Cách xử lý:</strong> Build mỗi User thành 1 container kín (OpenWebUI + ZeroClaw). Gắn <code>metadata_filter</code> cứng vào Vector Search. Nhân sự phòng ban nào chỉ được chọc vào vùng dữ liệu phòng ban đó. Database CEO để ở cụm vật lý riêng.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Section 10: Additional Analysis -->
+    <section class="section" id="additional-analysis">
+        <div class="container">
+            <h2 class="section-title">10. Các Phân Tích Bổ Sung</h2>
+            <p class="section-subtitle">Đánh giá chi tiết các công cụ và nền tảng AI được xem xét trong dự án.</p>
+
+            <!-- Chart Section -->
+            <div class="chart-container">
+                <h3 class="chart-title">📊 So sánh Điểm số Readiness (1-5)</h3>
+                <canvas id="readinessChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Tool Assessment Cards -->
+            <div class="tools-assessment-grid">
+                
+                <!-- Dify.ai -->
+                <div class="tool-card approved">
+                    <div class="tool-header">
+                        <div class="tool-icon">🧠</div>
+                        <div class="tool-info">
+                            <h3 class="tool-name">Dify.ai</h3>
+                            <span class="tool-category">Enterprise Open-Source LLMOps & GenAI Application Platform</span>
+                        </div>
+                        <span class="tool-status badge-approve">Chấp thuận</span>
+                    </div>
+                    <div class="tool-scores">
+                        <div class="score-item">
+                            <span class="score-label">Market Viability</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 100%"></div></div>
+                            <span class="score-value">5/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Kiến trúc</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Bảo mật</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 70%"></div></div>
+                            <span class="score-value">3.5/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">TCO</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">DX</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 100%"></div></div>
+                            <span class="score-value">5/5</span>
+                        </div>
+                    </div>
+                    <div class="tool-details">
+                        <p><strong>Tech Stack:</strong> Python (Flask), Node.js (Next.js, React), PostgreSQL, Redis, Weaviate/Qdrant/Milvus</p>
+                        <p><strong>Tác giả:</strong> LangGenius</p>
+                        <p><strong>Core Features:</strong></p>
+                        <ul>
+                            <li>LLM Orchestration: Kết nối 100+ LLMs, Model-agnostic</li>
+                            <li>Visual Workflow Studio: Drag-and-Drop Low-code/No-code</li>
+                            <li>RAG Engine: Chunking, embedding, Vector Search</li>
+                            <li>AI Agent Design: ReAct, Function Calling, 50+ Tools</li>
+                            <li>BaaS API: 1-click deployment REST API</li>
+                            <li>LLMOps & Monitoring: Logs, Token cost, Prompt IDE</li>
+                        </ul>
+                        <p><strong>Rủi ro:</strong> CVE-2025-3466 (Arbitrary Code Execution), CVE-2025-29720 (SSRF). Đã từng ghi nhận CVE nhưng MTTR nhanh (vài ngày).</p>
+                        <p><strong>TCO:</strong> License $0. Self-hosted: $50-500/tháng. Cloud SaaS: $59-159/tháng. Nhân sự VN: 15M-45M VNĐ/tháng. Time-to-Production: &lt; 2 ngày.</p>
+                        <p><strong>Mitigation:</strong> Đặt sau API Gateway, random password DB/Redis, kích hoạt RBAC. Sandbox Code Node riêng biệt.</p>
+                    </div>
+                </div>
+
+                <!-- ZeroClaw -->
+                <div class="tool-card approved">
+                    <div class="tool-header">
+                        <div class="tool-icon">🛡️</div>
+                        <div class="tool-info">
+                            <h3 class="tool-name">ZeroClaw</h3>
+                            <span class="tool-category">AI Agent Framework (Agent Runtime Kernel)</span>
+                        </div>
+                        <span class="tool-status badge-approve">Chấp thuận</span>
+                    </div>
+                    <div class="tool-scores">
+                        <div class="score-item">
+                            <span class="score-label">Market Viability</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Kiến trúc</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 100%"></div></div>
+                            <span class="score-value">5/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Bảo mật</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 100%"></div></div>
+                            <span class="score-value">5/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">TCO</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">DX</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                    </div>
+                    <div class="tool-details">
+                        <p><strong>Tech Stack:</strong> Rust (Cốt lõi), WebAssembly (Plugin system)</p>
+                        <p><strong>Tác giả:</strong> ZeroClaw Labs & Cộng đồng mã nguồn mở</p>
+                        <p><strong>Core Features:</strong></p>
+                        <ul>
+                            <li>Trait-driven Architecture: Swappable Components</li>
+                            <li>Secure-by-default: Sandboxing nghiêm ngặt, mã hóa API keys tĩnh</li>
+                            <li>Memory Minimalist: &lt; 5MB RAM ở chế độ chờ, binary 3.4MB</li>
+                            <li>Startup latency: &lt; 10ms</li>
+                            <li>0 Critical CVEs (02/2026), MTTR ~12 giờ</li>
+                        </ul>
+                        <p><strong>Rủi ro:</strong> Lương kỹ sư Rust cao ($1,500-$3,500/tháng). Đường cong học tập dốc (3-4 tuần training).</p>
+                        <p><strong>TCO:</strong> Capex $0. Opex ~$4/tháng cho t2.nano AWS. Maintenance &lt; 10 giờ/tháng.</p>
+                        <p><strong>Verified Use Cases:</strong> Agent giám sát K8s (DevOps), Edge IoT Monitoring trên Android/ARM</p>
+                        <p><strong>Mitigation:</strong> Chuyển logic nghiệp vụ sang Python/Node.js qua microservices. Pin version Docker để tránh breaking changes.</p>
+                    </div>
+                </div>
+
+                <!-- Odoo AI -->
+                <div class="tool-card conditional">
+                    <div class="tool-header">
+                        <div class="tool-icon">📊</div>
+                        <div class="tool-info">
+                            <h3 class="tool-name">Odoo AI</h3>
+                            <span class="tool-category">Enterprise ERP AI Features / API Wrapper</span>
+                        </div>
+                        <span class="tool-status badge-warning">Chấp thuận có điều kiện</span>
+                    </div>
+                    <div class="tool-scores">
+                        <div class="score-item">
+                            <span class="score-label">Market Viability</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 60%"></div></div>
+                            <span class="score-value">3/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Kiến trúc</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 60%"></div></div>
+                            <span class="score-value">3/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Bảo mật</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">TCO</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">DX</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                    </div>
+                    <div class="tool-details">
+                        <p><strong>Tech Stack:</strong> Python (Odoo Core), PostgreSQL, Tích hợp API LLM (OpenAI, Google Gemini)</p>
+                        <p><strong>Tác giả:</strong> Odoo S.A.</p>
+                        <p><strong>Core Features:</strong></p>
+                        <ul>
+                            <li>Hệ thống Quản trị Dữ liệu Cốt lõi: Data Integrity, ACID</li>
+                            <li>AI OCR: Trích xuất hóa đơn, biên lai</li>
+                            <li>Trợ lý AI: Ask AI & Text Generation</li>
+                        </ul>
+                        <p><strong>Rủi ro:</strong> Thin Wrapper - chỉ là API Wrapper, không có Vector DB nội tại. Thiếu RAG sâu. Chu kỳ phát hành 1 năm/phiên bản - không tương thích với tốc độ AI.</p>
+                        <p><strong>Khuyến nghị:</strong> Chỉ dùng làm System of Record (Hệ thống Lưu trữ Dữ liệu Giao dịch). Không dùng làm "não bộ" điều phối. Rút logic AI sang Middleware (Dify).</p>
+                        <p><strong>Mitigation Strategy:</strong> Duy trì Odoo làm trung tâm dữ liệu xuất sắc cho cấu trúc quy trình. Xây dựng AI Middleware hoạt động ngoại biên.</p>
+                    </div>
+                </div>
+
+                <!-- Perplexity -->
+                <div class="tool-card conditional">
+                    <div class="tool-header">
+                        <div class="tool-icon">🔍</div>
+                        <div class="tool-info">
+                            <h3 class="tool-name">Perplexity AI</h3>
+                            <span class="tool-category">AI-Powered Conversational Search Engine</span>
+                        </div>
+                        <span class="tool-status badge-warning">Chấp thuận có điều kiện</span>
+                    </div>
+                    <div class="tool-scores">
+                        <div class="score-item">
+                            <span class="score-label">Market Viability</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 100%"></div></div>
+                            <span class="score-value">5/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Kiến trúc</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Bảo mật</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 60%"></div></div>
+                            <span class="score-value">3/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">TCO</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 100%"></div></div>
+                            <span class="score-value">5/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">DX</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 100%"></div></div>
+                            <span class="score-value">5/5</span>
+                        </div>
+                    </div>
+                    <div class="tool-details">
+                        <p><strong>Tech Stack:</strong> Hệ sinh thái Transformer (Sonar độc quyền, GPT-4, Claude 3, Gemini), Distributed Architecture, Real-time Crawler</p>
+                        <p><strong>Tác giả:</strong> Perplexity AI (Aravind Srinivas, Denis Yarats, Johnny Ho, Andy Konwinski)</p>
+                        <p><strong>Core Features:</strong></p>
+                        <ul>
+                            <li>Trích dẫn theo thời gian thực (Cited Answers)</li>
+                            <li>Hybrid Model Routing: Sonar, GPT-4, Claude 3</li>
+                            <li>Perplexity Computer: Phối hợp 19 models</li>
+                            <li>Spaces: Không gian làm việc biệt lập theo dự án</li>
+                        </ul>
+                        <p><strong>Đơn vị hậu thuẫn:</strong> Nvidia, Jeff Bezos, các quỹ VC lớn. Định giá $20B (09/2025).</p>
+                        <p><strong>Rủi ro:</strong> Gói miễn phí dùng dữ liệu để train. Cần nâng cấp Enterprise để đạt chuẩn bảo mật/SOC2.</p>
+                        <p><strong>TCO:</strong> Enterprise Pro: $40/user/tháng ($480/năm). Enterprise Max: $325/user/tháng. API (Sonar): $0.2-$5/1M token. Thay thế hiệu quả chi phí xây dựng RAG nội bộ.</p>
+                        <p><strong>Mitigation:</strong> TUYỆT ĐỐI KHÔNG dùng bản Free/Pro cá nhân cho dữ liệu bí mật. Triển khai gói Enterprise Pro để kích hoạt "No model training on customer data". SOP kiểm tra trích dẫn từ con người.</p>
+                    </div>
+                </div>
+
+                <!-- Manus AI -->
+                <div class="tool-card conditional">
+                    <div class="tool-header">
+                        <div class="tool-icon">🤖</div>
+                        <div class="tool-info">
+                            <h3 class="tool-name">Manus AI</h3>
+                            <span class="tool-category">Autonomous AI Agent / Digital Worker Platform</span>
+                        </div>
+                        <span class="tool-status badge-warning">Chấp thuận có điều kiện</span>
+                    </div>
+                    <div class="tool-scores">
+                        <div class="score-item">
+                            <span class="score-label">Market Viability</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Kiến trúc</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Bảo mật</span>
+                            <div class="score-bar"><div class="score-fill danger" style="--score: 40%"></div></div>
+                            <span class="score-value">2/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">TCO</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 60%"></div></div>
+                            <span class="score-value">3/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">DX</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                    </div>
+                    <div class="tool-details">
+                        <p><strong>Tech Stack:</strong> CodeAct Architecture (Python dynamically executed), Sandbox Environment (Linux), LLM Orchestrator (Claude 3.5/3.7, Alibaba Qwen)</p>
+                        <p><strong>Tác giả:</strong> Butterfly Effect Technology (Monica, Singapore). Được Meta mua lại (Tháng 12/2025), thương vụ &gt; $2 tỷ USD.</p>
+                        <p><strong>Core Features:</strong></p>
+                        <ul>
+                            <li>Tự động hóa trình duyệt (Browser Automation)</li>
+                            <li>Sinh và thực thi mã nguồn độc lập (Autonomous Code Execution)</li>
+                            <li>Tổng hợp dữ liệu và lập báo cáo</li>
+                            <li>Multi-Agent Orchestration: Planner, Executor, Validator</li>
+                        </ul>
+                        <p><strong>Rủi ro nghiêm trọng:</strong> Prompt Injection, Data Leakage lên cloud Meta. Rủi ro tấn công Supply Chain từ PyPI. Không có open API toàn diện, Vendor Lock-in cao.</p>
+                        <p><strong>TCO:</strong> Basic: ~$19/tháng. Plus: ~$39/tháng. Pro: ~$199-200/tháng. Không báo trước lượng credit tiêu hao. Technical Debt Tax: Cao (High Risk).</p>
+                        <p><strong>Khuyến nghị:</strong> Chỉ triển khai quy mô nhỏ làm trợ lý nghiên cứu (R&D) với nguồn dữ liệu phi định danh (không PII). Tuyệt đối không cấp quyền Production DB hay Auto-merge.</p>
+                        <p><strong>Mitigation:</strong> Áp dụng Least Privilege, xoay API keys định kỳ. DLP để ngăn chặn PII. Audit log tất cả API calls từ Manus.</p>
+                    </div>
+                </div>
+
+                <!-- OpenClaw -->
+                <div class="tool-card rejected">
+                    <div class="tool-header">
+                        <div class="tool-icon">⚠️</div>
+                        <div class="tool-info">
+                            <h3 class="tool-name">OpenClaw</h3>
+                            <span class="tool-category">Autonomous AI Agent / Local AI Assistant</span>
+                        </div>
+                        <span class="tool-status badge-danger">Loại bỏ (Reject)</span>
+                    </div>
+                    <div class="tool-scores">
+                        <div class="score-item">
+                            <span class="score-label">Market Viability</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 60%"></div></div>
+                            <span class="score-value">3/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Kiến trúc</span>
+                            <div class="score-bar"><div class="score-fill" style="--score: 80%"></div></div>
+                            <span class="score-value">4/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">Bảo mật</span>
+                            <div class="score-bar"><div class="score-fill danger" style="--score: 40%"></div></div>
+                            <span class="score-value">2/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">TCO</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 60%"></div></div>
+                            <span class="score-value">3/5</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">DX</span>
+                            <div class="score-bar"><div class="score-fill warning" style="--score: 60%"></div></div>
+                            <span class="score-value">3/5</span>
+                        </div>
+                    </div>
+                    <div class="tool-details">
+                        <p><strong>Tech Stack:</strong> Python, LLM APIs (OpenAI, Anthropic, DeepSeek, Ollama), Playwright, MCP Protocol</p>
+                        <p><strong>Tác giả:</strong> Peter Steinberger (11/2025). Chuyển giao cho tổ chức mã nguồn mở độc lập (02/2026).</p>
+                        <p><strong>Core Features:</strong> Autonomous Task Execution, Seamless Messaging Integration, MCP Extensibility, Local Sandbox Operation</p>
+                        <p><strong>Rủi ro NGHIÊM TRỌNG:</strong></p>
+                        <ul>
+                            <li>CVE-2026-25253 (CVSS 8.8 - High): Remote Code Execution qua WebSocket</li>
+                            <li>CVE-2026-24763 & CVE-2026-25157: Command Injection</li>
+                            <li>Indirect Prompt Injection (OWASP LLM01)</li>
+                            <li>Data Leakage: Cơ chế phân quyền mặc định cấp quyền đọc Filesystem</li>
+                            <li>Malicious Skills: ClawHub thiếu kiểm duyệt</li>
+                            <li>Impersonation Attacks: Extension giả mạo chứa RAT</li>
+                        </ul>
+                        <p><strong>TCO:</strong> Capex $0. Opex ~$50/tháng (VPS 8GB) + $20-200/tháng API. Maintenance 30-45 giờ/tháng. Technical Debt Tax: <strong>RỦI RO CAO</strong>.</p>
+                        <p><strong>Khuyến nghị:</strong> <strong>REJECT</strong> cho Production. <strong>STRICTLY QUARANTINED</strong> cho R&D trong Air-gapped Sandbox. Buộc Human-in-the-Loop trước mọi lời gọi thao tác hệ thống.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Summary Table -->
+            <div class="table-container" style="margin-top: 3rem;">
+                <div class="table-header">
+                    <h3 class="table-title">📊 Tổng hợp Đánh giá Công nghệ</h3>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Công nghệ</th>
+                            <th>Phân loại</th>
+                            <th>Đánh giá Tổng thể</th>
+                            <th>Rủi ro Chính</th>
+                            <th>Khuyến nghị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Dify.ai</strong></td>
+                            <td>LLMOps & RAG</td>
+                            <td>4.3/5 ⭐</td>
+                            <td>CVE Code Execution (đã vá)</td>
+                            <td><span class="badge badge-approve">Chấp thuận</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>ZeroClaw</strong></td>
+                            <td>Agent Runtime</td>
+                            <td>4.4/5 ⭐</td>
+                            <td>Nhân sự Rust hiếm</td>
+                            <td><span class="badge badge-approve">Chấp thuận</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Odoo AI</strong></td>
+                            <td>ERP AI Features</td>
+                            <td>3.4/5</td>
+                            <td>Thiếu RAG, Update chậm (1 năm)</td>
+                            <td><span class="badge badge-warning">Có điều kiện</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Perplexity</strong></td>
+                            <td>AI Search</td>
+                            <td>4.4/5 ⭐</td>
+                            <td>Data leak (Free tier)</td>
+                            <td><span class="badge badge-warning">Có điều kiện</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Manus AI</strong></td>
+                            <td>Autonomous Agent</td>
+                            <td>3.4/5</td>
+                            <td>Prompt Injection, Meta cloud</td>
+                            <td><span class="badge badge-warning">Có điều kiện</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenClaw</strong></td>
+                            <td>Local AI Agent</td>
+                            <td>2.8/5</td>
+                            <td>CVE RCE (CVSS 8.8), Command Injection</td>
+                            <td><span class="badge badge-danger">Loại bỏ</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Key Insights -->
+            <div class="insights-container" style="margin-top: 3rem;">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-primary);">💡 Những Điểm Chính</h3>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">✅</div>
+                    <div class="insight-content">
+                        <h4>Top Performers</h4>
+                        <p><strong>Dify.ai</strong> và <strong>ZeroClaw</strong> là hai nền tảng được đánh giá cao nhất (4.3-4.4/5), phù hợp làm trụ cột cho hệ thống AI. Dify vượt trội ở Low-code Workflow (Time-to-Production &lt; 2 ngày), ZeroClaw vượt trội ở bảo mật (0 CVEs) và hiệu năng (&lt; 5MB RAM).</p>
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">⚠️</div>
+                    <div class="insight-content">
+                        <h4>Cảnh báo Bảo mật</h4>
+                        <p><strong>OpenClaw</strong> có CVE RCE nghiêm trọng (CVSS 8.8) và nhiều lỗ hổng Command Injection. <strong>Manus AI</strong> có rủi ro Prompt Injection và data leak lên cloud Meta. Cả hai đều cần cách ly nghiêm ngặt. Chỉ OpenClaw bị REJECT hoàn toàn khỏi Production.</p>
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">💰</div>
+                    <div class="insight-content">
+                        <h4>Tối ưu Chi phí</h4>
+                        <p><strong>Perplexity Enterprise Pro</strong> ($40/tháng) là giải pháp thay thế hiệu quả cho việc tự xây dựng RAG nội bộ (tiết kiệm $40-60K/năm nhân sự). <strong>Dify Self-hosted</strong> ($50-500/tháng) giúp kiểm soát chi phí LLM API. Chi phí năm nay ưu tiên cho 2 trụ cột: chatbot nội bộ (RAG + quản trị vận hành) và kịch bản chăm sóc resale đa kênh.</p>
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">🏗️</div>
+                    <div class="insight-content">
+                        <h4>Kiến trúc Khuyến nghị</h4>
+                        <p>Sử dụng <strong>Odoo</strong> làm System of Record (Giữ data sạch), <strong>Dify</strong> làm AI Gateway/RAG (Bộ não), <strong>ZeroClaw</strong> làm Sandbox Runtime (Lưới bảo vệ), <strong>n8n</strong> làm Orchestrator. Tách biệt rõ ràng giữa lưu trữ dữ liệu và xử lý AI - tuân thủ nguyên lý Hub-and-Spoke.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">AI Strategy Report</div>
+            <p class="footer-text">
+                Báo cáo chiến lược triển khai AI cho Tập đoàn | 2026<br>
+                Đối tượng: Ban Giám đốc (C-Level), Trưởng bộ phận Nghiệp vụ (Business Heads) và Team AI/Tech.<br>
+                Mục tiêu: Cung cấp định hướng kiến trúc, lộ trình và phân tích giải pháp công nghệ để ứng dụng AI sâu rộng, an toàn và tối ưu chi phí vào vận hành doanh nghiệp đa quốc gia.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scroll to top -->
+    <div class="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        ↑
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section').forEach(section => {
+            sectionObserver.observe(section);
+        });
+
+        // Navigation scroll effect
+        const nav = document.querySelector('.nav');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 100) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+
+            // Show/hide scroll to top button
+            const scrollTop = document.querySelector('.scroll-top');
+            if (currentScroll > 500) {
+                scrollTop.classList.add('visible');
+            } else {
+                scrollTop.classList.remove('visible');
+            }
+
+            lastScroll = currentScroll;
+        });
+
+        // Custom cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+            cursorDot.style.left = e.clientX - 3 + 'px';
+            cursorDot.style.top = e.clientY - 3 + 'px';
+        });
+
+        document.addEventListener('mousedown', () => {
+            cursor.style.transform = 'scale(0.8)';
+        });
+
+        document.addEventListener('mouseup', () => {
+            cursor.style.transform = 'scale(1)';
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Chart.js - Readiness Scoring Chart
+        const ctx = document.getElementById('readinessChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Market Viability', 'Kiến trúc', 'Bảo mật', 'TCO', 'DX'],
+                    datasets: [
+                        {
+                            label: 'Dify.ai',
+                            data: [5, 4, 3.5, 4, 5],
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'ZeroClaw',
+                            data: [4, 5, 5, 4, 4],
+                            backgroundColor: 'rgba(15, 82, 186, 0.2)',
+                            borderColor: 'rgba(15, 82, 186, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Odoo AI',
+                            data: [3, 3, 4, 4, 4],
+                            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Perplexity',
+                            data: [5, 4, 3, 5, 5],
+                            backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                            borderColor: 'rgba(6, 182, 212, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Manus AI',
+                            data: [4, 4, 2, 3, 4],
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            borderColor: 'rgba(139, 92, 246, 1)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

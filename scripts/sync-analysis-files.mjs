@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile, copyFile, readdir } from "node:fs/promi
 import path from "node:path";
 
 const projectRoot = process.cwd();
-const workspaceRoot = path.resolve(projectRoot, "..");
+const contentRoot = path.join(projectRoot, "content");
 const outputDir = path.join(projectRoot, "public", "analysis");
 const manifestPath = path.join(projectRoot, "src", "data", "analysis-manifest.json");
 
@@ -12,7 +12,6 @@ const ignoredDirectories = new Set([
   "node_modules",
   ".next",
   ".vercel",
-  "report-viewer",
 ]);
 
 function toTitle(relativePath) {
@@ -61,10 +60,16 @@ async function run() {
   await mkdir(outputDir, { recursive: true });
 
   const manifest = [];
-  const sourceFiles = await collectSourceFiles(workspaceRoot);
+  let sourceFiles = [];
+  try {
+    sourceFiles = await collectSourceFiles(contentRoot);
+  } catch (error) {
+    console.error("Khong tim thay thu muc content/. Hay tao report-viewer/content truoc khi build.");
+    throw error;
+  }
 
   for (const relativeSourcePath of sourceFiles) {
-    const absoluteSourcePath = path.join(workspaceRoot, relativeSourcePath);
+    const absoluteSourcePath = path.join(contentRoot, relativeSourcePath);
     const baseName = path.basename(relativeSourcePath);
     const destinationName = relativeSourcePath.replace(/[\\/]/g, "__");
     const absoluteDestinationPath = path.join(outputDir, destinationName);

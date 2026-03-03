@@ -1,41 +1,5 @@
 [
   {
-    "id": "cham-soc-kich-ban-call__README.md",
-    "title": "Cham Soc Kich Ban Call / README",
-    "sourcePath": "cham-soc-kich-ban-call/README.md",
-    "fileName": "README.md",
-    "type": "markdown",
-    "publicPath": "/analysis/cham-soc-kich-ban-call__README.md",
-    "size": 3902
-  },
-  {
-    "id": "cham-soc-kich-ban-call__use-case.md",
-    "title": "Cham Soc Kich Ban Call / Use Case",
-    "sourcePath": "cham-soc-kich-ban-call/use-case.md",
-    "fileName": "use-case.md",
-    "type": "markdown",
-    "publicPath": "/analysis/cham-soc-kich-ban-call__use-case.md",
-    "size": 3401
-  },
-  {
-    "id": "cham-soc-kich-ban-mess__README.md",
-    "title": "Cham Soc Kich Ban Mess / README",
-    "sourcePath": "cham-soc-kich-ban-mess/README.md",
-    "fileName": "README.md",
-    "type": "markdown",
-    "publicPath": "/analysis/cham-soc-kich-ban-mess__README.md",
-    "size": 4339
-  },
-  {
-    "id": "cham-soc-kich-ban-mess__use-case.md",
-    "title": "Cham Soc Kich Ban Mess / Use Case",
-    "sourcePath": "cham-soc-kich-ban-mess/use-case.md",
-    "fileName": "use-case.md",
-    "type": "markdown",
-    "publicPath": "/analysis/cham-soc-kich-ban-mess__use-case.md",
-    "size": 3658
-  },
-  {
     "id": "docs__analysis__html__kimi-report-1.html",
     "title": "Docs / Analysis / Html / Kimi Report 1",
     "sourcePath": "docs/analysis/html/kimi-report-1.html",
@@ -108,30 +72,66 @@
     "size": 5282
   },
   {
-    "id": "liver_detoxnic_ai_sales_bot__README.md",
-    "title": "Liver Detoxnic Ai Sales Bot / README",
-    "sourcePath": "liver_detoxnic_ai_sales_bot/README.md",
+    "id": "projects__cham-soc-kich-ban-call__README.md",
+    "title": "Projects / Cham Soc Kich Ban Call / README",
+    "sourcePath": "projects/cham-soc-kich-ban-call/README.md",
     "fileName": "README.md",
     "type": "markdown",
-    "publicPath": "/analysis/liver_detoxnic_ai_sales_bot__README.md",
+    "publicPath": "/analysis/projects__cham-soc-kich-ban-call__README.md",
+    "size": 3902
+  },
+  {
+    "id": "projects__cham-soc-kich-ban-call__use-case.md",
+    "title": "Projects / Cham Soc Kich Ban Call / Use Case",
+    "sourcePath": "projects/cham-soc-kich-ban-call/use-case.md",
+    "fileName": "use-case.md",
+    "type": "markdown",
+    "publicPath": "/analysis/projects__cham-soc-kich-ban-call__use-case.md",
+    "size": 3401
+  },
+  {
+    "id": "projects__cham-soc-kich-ban-mess__README.md",
+    "title": "Projects / Cham Soc Kich Ban Mess / README",
+    "sourcePath": "projects/cham-soc-kich-ban-mess/README.md",
+    "fileName": "README.md",
+    "type": "markdown",
+    "publicPath": "/analysis/projects__cham-soc-kich-ban-mess__README.md",
+    "size": 4339
+  },
+  {
+    "id": "projects__cham-soc-kich-ban-mess__use-case.md",
+    "title": "Projects / Cham Soc Kich Ban Mess / Use Case",
+    "sourcePath": "projects/cham-soc-kich-ban-mess/use-case.md",
+    "fileName": "use-case.md",
+    "type": "markdown",
+    "publicPath": "/analysis/projects__cham-soc-kich-ban-mess__use-case.md",
+    "size": 3658
+  },
+  {
+    "id": "projects__liver_detoxnic_ai_sales_bot__README.md",
+    "title": "Projects / Liver Detoxnic Ai Sales Bot / README",
+    "sourcePath": "projects/liver_detoxnic_ai_sales_bot/README.md",
+    "fileName": "README.md",
+    "type": "markdown",
+    "publicPath": "/analysis/projects__liver_detoxnic_ai_sales_bot__README.md",
     "size": 9341
   },
   {
-    "id": "openclaw-zeroclaw__README.md",
-    "title": "Openclaw Zeroclaw / README",
-    "sourcePath": "openclaw-zeroclaw/README.md",
+    "id": "projects__openclaw-zeroclaw__README.md",
+    "title": "Projects / Openclaw Zeroclaw / README",
+    "sourcePath": "projects/openclaw-zeroclaw/README.md",
     "fileName": "README.md",
     "type": "markdown",
-    "publicPath": "/analysis/openclaw-zeroclaw__README.md",
+    "publicPath": "/analysis/projects__openclaw-zeroclaw__README.md",
     "size": 3977
   },
   {
-    "id": "openclaw-zeroclaw__use-case.md",
-    "title": "Openclaw Zeroclaw / Use Case",
-    "sourcePath": "openclaw-zeroclaw/use-case.md",
+    "id": "projects__openclaw-zeroclaw__use-case.md",
+    "title": "Projects / Openclaw Zeroclaw / Use Case",
+    "sourcePath": "projects/openclaw-zeroclaw/use-case.md",
     "fileName": "use-case.md",
     "type": "markdown",
-    "publicPath": "/analysis/openclaw-zeroclaw__use-case.md",
+    "publicPath": "/analysis/projects__openclaw-zeroclaw__use-case.md",
     "size": 4062
   }
 ]
