@@ -1,0 +1,187 @@
+.markdown-content {
+  color: var(--ui-text);
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.markdown-content > * + * {
+  margin-top: 1rem;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+  margin-top: 1.8rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ui-text);
+  scroll-margin-top: var(--report-anchor-offset);
+}
+
+.markdown-content h1 {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.markdown-content h2 {
+  font-size: 1.55rem;
+  font-weight: 750;
+  border-bottom: 1px solid var(--ui-border);
+  padding-bottom: 0.35rem;
+}
+
+.markdown-content h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.markdown-content p,
+.markdown-content li {
+  color: var(--ui-text-muted);
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-left: 1.25rem;
+}
+
+.markdown-content li + li {
+  margin-top: 0.35rem;
+}
+
+.markdown-content a {
+  color: var(--ui-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.markdown-content a:hover {
+  color: var(--ui-link-hover);
+  text-decoration-thickness: 2px;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid var(--ui-accent-green);
+  padding: 0.65rem 0 0.65rem 1.25rem;
+  color: var(--ui-text-muted);
+  background: var(--ui-bg-muted);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.markdown-content .code-block-wrapper {
+  border: 1px solid var(--ui-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.markdown-content .code-block-wrapper pre {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.markdown-content pre {
+  overflow-x: auto;
+  border: 1px solid var(--ui-border);
+  border-radius: 0.75rem;
+  background: var(--ui-code-bg);
+  color: var(--ui-code-fg);
+  padding: 0.9rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.markdown-content :not(pre) > code {
+  border-radius: 0.375rem;
+  background: var(--ui-inline-code-bg);
+  color: var(--ui-inline-code-fg);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.88em;
+  font-weight: 500;
+  border: 1px solid var(--ui-border);
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  border: 1px solid var(--ui-border);
+  border-radius: 0.5rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid var(--ui-border);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.markdown-content th {
+  background: var(--ui-bg-muted);
+  color: var(--ui-text);
+  font-weight: 700;
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid var(--ui-border);
+  margin-top: 1.4rem;
+  margin-bottom: 1.4rem;
+}
+
+.toc-panel {
+  position: sticky;
+  top: 1.25rem;
+  max-height: calc(100vh - 2.5rem);
+  overflow: auto;
+}
+
+.toc-link {
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+}
+
+.toc-level-1 .toc-link {
+  font-weight: 600;
+  color: var(--ui-text-muted);
+}
+
+.toc-level-2 .toc-link {
+  padding-left: 0.4rem;
+}
+
+.toc-level-3 .toc-link {
+  padding-left: 0.9rem;
+}
+
+.toc-level-4 .toc-link {
+  padding-left: 1.3rem;
+  font-size: 0.82rem;
+}
+
+.toc-link[aria-current="true"] {
+  border-left-color: var(--ui-accent-green);
+  color: var(--ui-accent-green) !important;
+}
+
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.mermaid-diagram svg .edgeLabel rect {
+  fill: var(--ui-bg-muted) !important;
+}
+
+.mermaid-diagram svg .label,
+.mermaid-diagram svg .nodeLabel,
+.mermaid-diagram svg .edgeLabel {
+  color: var(--ui-text) !important;
+}

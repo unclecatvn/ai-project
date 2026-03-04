@@ -1,23 +1,36 @@
-import { getAllAnalysisItems } from "@/lib/analysis";
-import { ReportExplorer } from "@/components/report-explorer";
+import { getAllAnalysisItems } from "@/features/reports/lib/analysis";
+import { ReportExplorer } from "@/features/reports/components/report-explorer";
+import { cookies, headers } from "next/headers";
+import { resolveLanguage } from "@/shared/i18n/resolve-language";
+import { AppNavbar } from "@/shared/components/app-navbar";
+import { getMessages } from "@/shared/i18n/messages";
+import { resolveTheme, THEME_COOKIE_KEY } from "@/shared/theme/resolve-theme";
 
-export default function Home() {
+type HomePageProps = {
+  searchParams?: Promise<{ lang?: string }>;
+};
+
+export default async function Home({ searchParams }: HomePageProps) {
   const reports = getAllAnalysisItems();
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const headerStore = await headers();
+  const cookieStore = await cookies();
+  const lang = resolveLanguage(resolvedSearchParams.lang, headerStore.get("accept-language"), cookieStore.get("NEXT_LOCALE")?.value ?? null);
+  const initialTheme = resolveTheme(cookieStore.get(THEME_COOKIE_KEY)?.value ?? null);
+  const m = getMessages(lang);
 
   return (
-    <main className="min-h-screen bg-slate-50 px-3 py-8 text-slate-900 sm:px-4 lg:px-6">
+    <main className="app-page min-h-screen px-3 py-8 sm:px-4 lg:px-6">
       <div className="mx-auto w-full max-w-[1600px]">
-        <h1 className="text-3xl font-bold tracking-tight">Trình xem báo cáo phân tích</h1>
-        <p className="mt-3 text-sm text-slate-600">
-          Danh sách file Markdown/HTML được tự động quét từ project gốc để xem nhanh trên local và Vercel.
-        </p>
-        <p className="mt-1 text-sm text-slate-500">Tổng cộng: {reports.length} file</p>
-        <ReportExplorer items={reports} />
+        <AppNavbar lang={lang} initialTheme={initialTheme} />
+        <div className="mb-1">
+          <h1 className="app-text text-3xl font-bold tracking-tight">{m.home.title}</h1>
+          <p className="app-text-soft mt-2 text-sm leading-relaxed">{m.home.description}</p>
+        </div>
+        <ReportExplorer items={reports} lang={lang} />
 
         {reports.length === 0 ? (
-          <p className="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            Chưa có file nào được đồng bộ. Hãy chạy lại `npm run predev` để cập nhật danh sách file.
-          </p>
+          <p className="app-warning mt-8 rounded-lg p-4 text-sm">{m.home.emptySync}</p>
         ) : null}
       </div>
     </main>
