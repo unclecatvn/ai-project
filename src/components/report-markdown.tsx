@@ -155,7 +155,9 @@ export function ReportMarkdown({ publicPath }: ReportMarkdownProps) {
     async function load() {
       setError("");
       try {
-        const response = await fetch(publicPath);
+        const response = await fetch(publicPath, {
+          cache: "no-store",
+        });
         if (!response.ok) {
           throw new Error(`Cannot load markdown file: ${response.status}`);
         }

@@ -1,3 +1,4 @@
+import { watch } from "node:fs";
 import { mkdir, readFile, rm, writeFile, copyFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
@@ -55,7 +56,7 @@ async function collectSourceFiles(currentDirectory, relativePrefix = "") {
   return results;
 }
 
-async function run() {
+async function syncFiles() {
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
 
@@ -97,7 +98,74 @@ async function run() {
   manifest.sort((first, second) => first.sourcePath.localeCompare(second.sourcePath, "vi"));
 
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf8");
-  console.log(`Synced ${manifest.length} analysis files.`);
+  return manifest.length;
+}
+
+async function run() {
+  const watchMode = process.argv.includes("--watch");
+  let syncInProgress = false;
+  let syncQueued = false;
+  let debounceTimer = null;
+
+  async function runSync() {
+    if (syncInProgress) {
+      syncQueued = true;
+      return;
+    }
+
+    syncInProgress = true;
+    do {
+      syncQueued = false;
+      const syncedCount = await syncFiles();
+      console.log(`Synced ${syncedCount} analysis files.`);
+    } while (syncQueued);
+    syncInProgress = false;
+  }
+
+  await runSync();
+
+  if (!watchMode) {
+    return;
+  }
+
+  console.log(`Watching for changes in: ${contentRoot}`);
+  const watcher = watch(contentRoot, { recursive: true }, (_eventType, fileName) => {
+    if (!fileName) {
+      return;
+    }
+
+    const normalized = fileName.toString().replace(/\\/g, "/");
+    const segments = normalized.split("/").filter(Boolean);
+    if (segments.some((segment) => segment.startsWith(".") || ignoredDirectories.has(segment))) {
+      return;
+    }
+
+    const extension = path.extname(normalized).toLowerCase();
+    if (extension && !includedExtensions.has(extension)) {
+      return;
+    }
+
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(() => {
+      runSync().catch((error) => {
+        console.error("Failed to sync analysis files.");
+        console.error(error);
+      });
+    }, 200);
+  });
+
+  process.on("SIGINT", () => {
+    watcher.close();
+    process.exit(0);
+  });
+  process.on("SIGTERM", () => {
+    watcher.close();
+    process.exit(0);
+  });
+
+  await new Promise(() => {});
 }
 
 run().catch((error) => {

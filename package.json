@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "sync": "node scripts/sync-analysis-files.mjs",
+    "sync:watch": "node scripts/sync-analysis-files.mjs --watch",
     "predev": "node scripts/sync-analysis-files.mjs",
-    "dev": "next dev",
+    "dev": "node scripts/sync-analysis-files.mjs --watch & next dev",
     "prebuild": "node scripts/sync-analysis-files.mjs",
     "build": "next build",
     "start": "next start",
