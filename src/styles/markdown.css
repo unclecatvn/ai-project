@@ -319,8 +319,8 @@
 
 .mermaid-viewport {
   overflow: hidden;
-  min-height: 200px;
-  max-height: 600px;
+  min-height: 500px;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -346,4 +346,265 @@
 .mermaid-diagram svg .nodeLabel,
 .mermaid-diagram svg .edgeLabel {
   color: var(--ui-text) !important;
+}
+
+/* ─── Markdown Editor ─── */
+
+.markdown-editor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ui-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--ui-surface);
+}
+
+.markdown-editor__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-bg-muted);
+  flex-wrap: wrap;
+}
+
+.markdown-editor__toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.markdown-editor__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.markdown-editor__label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ui-text-soft);
+}
+
+.markdown-editor__dirty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ui-warning, #f59e0b);
+  font-weight: 500;
+}
+
+.markdown-editor__dirty-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ui-warning, #f59e0b);
+  animation: editor-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes editor-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.markdown-editor__saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ui-accent-green, #22c55e);
+  font-weight: 600;
+}
+
+.markdown-editor__error {
+  font-size: 12px;
+  color: var(--ui-danger, #ef4444);
+  font-weight: 500;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.markdown-editor__panes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 60vh;
+}
+
+.markdown-editor__editor-pane,
+.markdown-editor__preview-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.markdown-editor__editor-pane {
+  border-right: 1px solid var(--ui-border);
+}
+
+.markdown-editor__pane-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ui-text-soft);
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  user-select: none;
+}
+
+.markdown-editor__textarea {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 16px 18px;
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  tab-size: 2;
+  color: var(--ui-text);
+  background: var(--ui-bg);
+  caret-color: var(--ui-accent-green, #22c55e);
+}
+
+.markdown-editor__textarea::placeholder {
+  color: var(--ui-text-soft);
+}
+
+.markdown-editor__textarea:focus {
+  box-shadow: inset 2px 0 0 var(--ui-accent-green, #22c55e);
+}
+
+.markdown-editor__preview {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  background: var(--ui-bg);
+}
+
+.markdown-editor__history {
+  border-top: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  padding: 12px 16px;
+}
+
+.markdown-editor__history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.markdown-editor__history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.markdown-editor__history-item {
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-bg);
+  padding: 10px;
+}
+
+.markdown-editor__history-item-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.markdown-editor__history-time {
+  font-size: 12px;
+  color: var(--ui-text-soft);
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+}
+
+.markdown-editor__history-action {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ui-accent-green, #22c55e);
+  font-weight: 600;
+}
+
+.markdown-editor__history-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.markdown-editor__history-label {
+  font-size: 11px;
+  color: var(--ui-text-soft);
+  margin-bottom: 3px;
+}
+
+.markdown-editor__history-diff pre {
+  margin: 0;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px dashed var(--ui-border);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.markdown-editor__history-empty,
+.markdown-editor__history-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ui-text-soft);
+}
+
+.markdown-editor__history-error {
+  color: var(--ui-danger, #ef4444);
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 768px) {
+  .markdown-editor__panes {
+    grid-template-columns: 1fr;
+  }
+
+  .markdown-editor__editor-pane {
+    border-right: none;
+    border-bottom: 1px solid var(--ui-border);
+    min-height: 40vh;
+  }
+
+  .markdown-editor__preview-pane {
+    min-height: 30vh;
+  }
+
+  .markdown-editor__history-diff {
+    grid-template-columns: 1fr;
+  }
 }

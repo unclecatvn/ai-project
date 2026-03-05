@@ -291,11 +291,25 @@ export function EditorPane({
             {m.view}
           </a>
           <a
+            href={`/files/${encodeURIComponent(item.id)}?lang=${lang}`}
+            className="editor-statusbar__link"
+          >
+            {lang === "vi" ? "Sửa" : "Edit"}
+          </a>
+          <a
             href={`/api/file-manager/files/download?source_path=${encodeURIComponent(item.sourcePath)}&download=1`}
             download={item.fileName}
             className="editor-statusbar__link"
           >
             {m.download}
+          </a>
+          <a
+            href={`/api/file-manager/files/${encodeURIComponent(item.id)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="editor-statusbar__link"
+          >
+            {lang === "vi" ? "Chi tiết" : "Details"}
           </a>
         </div>
       ) : null}

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies, headers } from "next/headers";
-import { ReportMarkdown } from "@/features/reports/components/report-markdown";
 import { getAnalysisItemBySourcePath } from "@/features/reports/lib/analysis";
+import { FileViewEditor } from "@/features/reports/components/file-view-editor";
 import { AppNavbar } from "@/shared/components/app-navbar";
 import { resolveLanguage } from "@/shared/i18n/resolve-language";
 import { getMessages } from "@/shared/i18n/messages";
@@ -84,25 +84,16 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
         </div>
 
         <div className="mt-6">
-          {report.type === "html" ? (
-            <iframe
-              srcDoc={report.content ?? ""}
-              title={report.title}
-              className="app-card h-[80vh] w-full"
-              sandbox="allow-scripts"
-            />
-          ) : report.content ? (
-            <MarkdownFromContent content={report.content} lang={lang} />
-          ) : (
-            <p className="app-text-soft text-sm">No content available.</p>
-          )}
+          <FileViewEditor
+            fileId={report.id}
+            initialContent={report.content ?? ""}
+            lang={lang}
+            publicPath={report.publicPath ?? ""}
+            fileType={report.type}
+          />
         </div>
       </div>
     </main>
   );
 }
 
-function MarkdownFromContent({ content, lang }: { content: string; lang: "vi" | "en" }) {
-  const dataUrl = `data:text/markdown;base64,${Buffer.from(content).toString("base64")}`;
-  return <ReportMarkdown publicPath={dataUrl} lang={lang} />;
-}

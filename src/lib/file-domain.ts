@@ -32,12 +32,35 @@ export type UpdateFileInput = Partial<
   }
 >;
 
+type UpdateFileOptions = {
+  skipChangeLog?: boolean;
+  changeLogAction?: ChangeAction;
+  forceNewChangeVersion?: boolean;
+};
+
 type AuditAction =
   | "file_created"
   | "file_updated"
   | "file_deleted"
   | "file_read"
   | "signature_verify_failed";
+
+type ChangeAction = "file_updated" | "file_rollback";
+
+type ChangeState = {
+  content: string;
+};
+
+export type FileChangeLogRecord = {
+  id: number;
+  file_id: string | null;
+  action: ChangeAction;
+  before_state: ChangeState | null;
+  after_state: ChangeState | null;
+  created_at: string;
+};
+
+const VERSION_WINDOW_MS = 5 * 60 * 1000;
 
 async function writeAuditLog(action: AuditAction, fileId: string, detail?: Record<string, unknown>) {
   try {
@@ -49,6 +72,71 @@ async function writeAuditLog(action: AuditAction, fileId: string, detail?: Recor
     });
   } catch {
     // Keep read/write path resilient before audit migration is applied.
+  }
+}
+
+function getStateContent(state: unknown): string {
+  if (!state || typeof state !== "object") {
+    return "";
+  }
+  const maybeContent = (state as { content?: unknown }).content;
+  return typeof maybeContent === "string" ? maybeContent : "";
+}
+
+async function writeChangeLogWithWindow(params: {
+  fileId: string;
+  action: ChangeAction;
+  beforeContent: string;
+  afterContent: string;
+  forceNewVersion?: boolean;
+}) {
+  const { fileId, action, beforeContent, afterContent, forceNewVersion = false } = params;
+  const admin = createAdminClient();
+
+  const { data: latest, error: latestError } = await admin
+    .from("file_change_logs")
+    .select("id,action,before_state,created_at")
+    .eq("file_id", fileId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (latestError) {
+    throw latestError;
+  }
+
+  const canMergeIntoLatest =
+    !forceNewVersion &&
+    action === "file_updated" &&
+    latest &&
+    latest.action === "file_updated" &&
+    Date.now() - new Date(latest.created_at as string).getTime() <= VERSION_WINDOW_MS;
+
+  if (canMergeIntoLatest) {
+    const mergedBeforeContent = getStateContent(latest.before_state) || beforeContent;
+    const { error: updateError } = await admin
+      .from("file_change_logs")
+      .update({
+        before_state: { content: mergedBeforeContent },
+        after_state: { content: afterContent },
+      })
+      .eq("id", latest.id);
+
+    if (updateError) {
+      throw updateError;
+    }
+    return;
+  }
+
+  const { error: insertError } = await admin.from("file_change_logs").insert({
+    file_id: fileId,
+    action,
+    before_state: { content: beforeContent },
+    after_state: { content: afterContent },
+  });
+
+  if (insertError) {
+    throw insertError;
   }
 }
 
@@ -278,19 +366,22 @@ export async function upsertFileBySourcePath(input: CreateFileInput): Promise<Fi
   });
 }
 
-export async function updateFile(id: string, input: UpdateFileInput): Promise<FileRecord> {
+export async function updateFile(
+  id: string,
+  input: UpdateFileInput,
+  options: UpdateFileOptions = {},
+): Promise<FileRecord> {
   const admin = createAdminClient();
   const updates: Record<string, unknown> = {};
-  const needsCurrentForSignature =
-    input.content !== undefined &&
-    (input.source_path === undefined || input.file_type === undefined);
+  const needsCurrentForSignature = input.content !== undefined;
   let currentSourcePath: string | undefined;
   let currentFileType: string | undefined;
+  let currentContent: string | undefined;
 
   if (needsCurrentForSignature) {
     const { data: current, error: currentError } = await admin
       .from("files")
-      .select("source_path, file_type")
+      .select("source_path, file_type, content")
       .eq("id", id)
       .single();
     if (currentError) {
@@ -298,6 +389,7 @@ export async function updateFile(id: string, input: UpdateFileInput): Promise<Fi
     }
     currentSourcePath = current.source_path;
     currentFileType = current.file_type;
+    currentContent = normalizeContent(current.content ?? "");
   }
 
   if (input.folder_id !== undefined) updates.folder_id = input.folder_id;
@@ -343,6 +435,78 @@ export async function updateFile(id: string, input: UpdateFileInput): Promise<Fi
 
   const file = data as unknown as FileRecord;
   await writeAuditLog("file_updated", file.id, { source_path: file.source_path });
+
+  if (input.content !== undefined && !options.skipChangeLog) {
+    const beforeContent = currentContent ?? "";
+    const afterContent = normalizeContent(file.content ?? "");
+    if (beforeContent !== afterContent) {
+      await writeChangeLogWithWindow({
+        fileId: file.id,
+        action: options.changeLogAction ?? "file_updated",
+        beforeContent,
+        afterContent,
+        forceNewVersion: options.forceNewChangeVersion ?? false,
+      });
+    }
+  }
+
+  return file;
+}
+
+export async function listFileChangeLogs(fileId: string, limit = 30): Promise<FileChangeLogRecord[]> {
+  const safeLimit = Math.min(200, Math.max(1, limit));
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("file_change_logs")
+    .select("id,file_id,action,before_state,after_state,created_at")
+    .eq("file_id", fileId)
+    .order("created_at", { ascending: false })
+    .limit(safeLimit);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as FileChangeLogRecord[];
+}
+
+export async function rollbackFileToChangeLog(fileId: string, changeLogId: number): Promise<FileRecord> {
+  const admin = createAdminClient();
+  const { data: changeLog, error: changeLogError } = await admin
+    .from("file_change_logs")
+    .select("id,file_id,after_state")
+    .eq("id", changeLogId)
+    .eq("file_id", fileId)
+    .maybeSingle();
+
+  if (changeLogError) {
+    throw changeLogError;
+  }
+  if (!changeLog) {
+    throw new Error("Change log not found");
+  }
+
+  const currentFile = await getFileById(fileId, false);
+  if (!currentFile) {
+    throw new Error("File not found");
+  }
+
+  const rollbackContent = getStateContent(changeLog.after_state);
+  const beforeContent = normalizeContent(currentFile.content ?? "");
+  const file = await updateFile(
+    fileId,
+    { content: rollbackContent },
+    { skipChangeLog: true },
+  );
+
+  await writeChangeLogWithWindow({
+    fileId,
+    action: "file_rollback",
+    beforeContent,
+    afterContent: rollbackContent,
+    forceNewVersion: true,
+  });
+
   return file;
 }
 

@@ -83,6 +83,16 @@ type MessageSchema = {
     copied: string;
     openToc: string;
     metadata: string;
+    edit: string;
+    editing: string;
+    save: string;
+    saving: string;
+    saved: string;
+    cancel: string;
+    editFile: string;
+    preview: string;
+    unsavedChanges: string;
+    saveFailed: string;
   };
 };
 
@@ -170,6 +180,16 @@ export const messages: Record<AppLang, MessageSchema> = {
       copied: "Copied",
       openToc: "Open table of contents",
       metadata: "Document metadata",
+      edit: "Edit",
+      editing: "Editing",
+      save: "Save",
+      saving: "Saving...",
+      saved: "Saved!",
+      cancel: "Cancel",
+      editFile: "Edit file",
+      preview: "Preview",
+      unsavedChanges: "You have unsaved changes",
+      saveFailed: "Save failed",
     },
   },
   vi: {
@@ -255,6 +275,16 @@ export const messages: Record<AppLang, MessageSchema> = {
       copied: "Đã copy",
       openToc: "Mở mục lục",
       metadata: "Thông tin tài liệu",
+      edit: "Sửa",
+      editing: "Đang sửa",
+      save: "Lưu",
+      saving: "Đang lưu...",
+      saved: "Đã lưu!",
+      cancel: "Hủy",
+      editFile: "Sửa file",
+      preview: "Xem trước",
+      unsavedChanges: "Bạn có thay đổi chưa lưu",
+      saveFailed: "Lưu thất bại",
     },
   },
 };

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies, headers } from "next/headers";
-import { ReportMarkdown } from "@/features/reports/components/report-markdown";
 import { getFileById, isSupabaseConfigured } from "@/features/reports/lib/analysis";
+import { FileViewEditor } from "@/features/reports/components/file-view-editor";
 import { AppNavbar } from "@/shared/components/app-navbar";
 import { resolveLanguage } from "@/shared/i18n/resolve-language";
 import { getMessages } from "@/shared/i18n/messages";
@@ -80,40 +80,18 @@ export default async function FilePage({ params, searchParams }: FilePageProps) 
           </div>
         </div>
 
-        {/* Content viewer */}
+        {/* Content viewer / editor */}
         <div className="mt-6">
-          {file.content && file.file_type === "markdown" ? (
-            <MarkdownFromContent content={file.content} lang={lang} />
-          ) : file.content && file.file_type === "html" ? (
-            <div className="app-card p-4">
-              <iframe
-                srcDoc={file.content}
-                title={file.title}
-                className="h-[80vh] w-full rounded-lg border-0"
-                sandbox="allow-scripts"
-              />
-            </div>
-          ) : file.content ? (
-            <div className="app-card p-5">
-              <pre className="overflow-x-auto text-sm" style={{ color: 'var(--ui-code-fg)', background: 'var(--ui-code-bg)', padding: '1rem', borderRadius: '0.75rem' }}>
-                <code>{file.content}</code>
-              </pre>
-            </div>
-          ) : (
-            <p className="app-text-soft text-sm">No content available.</p>
-          )}
+          <FileViewEditor
+            fileId={file.id}
+            initialContent={file.content ?? ""}
+            lang={lang}
+            publicPath=""
+            fileType={file.file_type}
+          />
         </div>
       </div>
     </main>
   );
 }
 
-/**
- * Render markdown content directly (not from public path).
- * Uses a client component to pass content as a prop.
- */
-function MarkdownFromContent({ content, lang }: { content: string; lang: "vi" | "en" }) {
-  // For Supabase-sourced content, pass via a data URL so ReportMarkdown can fetch it
-  const dataUrl = `data:text/markdown;base64,${Buffer.from(content).toString("base64")}`;
-  return <ReportMarkdown publicPath={dataUrl} lang={lang} />;
-}
