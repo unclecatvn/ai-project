@@ -19,7 +19,11 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
  * Server-only admin client using service role key for privileged operations.
  */
 export function createAdminClient() {
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  const serviceKey =
+    process.env.SUPABASE_SERVICE_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    supabaseAnonKey; // fallback to anon key in local dev
+  return createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false },
   });
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 import type { AnalysisItem } from "@/features/reports/lib/analysis";
 import { formatSize, getBreadcrumbs } from "@/features/reports/components/file-browser/helpers";
 import { getMessages } from "@/shared/i18n/messages";
@@ -40,6 +41,82 @@ function FileTabIcon({ fileType }: { fileType: string }) {
   );
 }
 
+/* ─── Tab Context Menu ─── */
+
+type TabMenu = { x: number; y: number; sourcePath: string } | null;
+
+function TabContextMenu({
+  menu,
+  tabs,
+  onClose,
+  onCloseTab,
+  onCloseOthers,
+  onCloseToRight,
+  onCloseAll,
+}: {
+  menu: NonNullable<TabMenu>;
+  tabs: EditorTab[];
+  onClose: () => void;
+  onCloseTab: (sp: string) => void;
+  onCloseOthers: (sp: string) => void;
+  onCloseToRight: (sp: string) => void;
+  onCloseAll: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const idx = tabs.findIndex((t) => t.sourcePath === menu.sourcePath);
+  const hasOthers = tabs.length > 1;
+  const hasRight = idx >= 0 && idx < tabs.length - 1;
+
+  useEffect(() => {
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  type Item = { label: string; disabled?: boolean; danger?: boolean; divider?: boolean; action: () => void };
+  const items: Item[] = [
+    { label: "Close Tab", action: () => { onCloseTab(menu.sourcePath); onClose(); } },
+    { label: "Close Others", disabled: !hasOthers, action: () => { onCloseOthers(menu.sourcePath); onClose(); } },
+    { label: "Close to the Right", disabled: !hasRight, action: () => { onCloseToRight(menu.sourcePath); onClose(); } },
+    { label: "Close All", action: () => { onCloseAll(); onClose(); }, divider: true },
+    {
+      label: "Copy Path",
+      action: () => { navigator.clipboard.writeText(menu.sourcePath).catch(() => {}); onClose(); },
+    },
+  ];
+
+  return (
+    <div
+      ref={ref}
+      className="explorer-context-menu"
+      style={{ position: "fixed", top: menu.y, left: menu.x, zIndex: 200 }}
+    >
+      {items.map((item, i) => (
+        <div key={i}>
+          {item.divider ? <div className="explorer-context-menu__divider" /> : null}
+          <button
+            type="button"
+            className={`explorer-context-menu__item ${item.danger ? "explorer-context-menu__item--danger" : ""} ${item.disabled ? "explorer-context-menu__item--disabled" : ""}`}
+            onClick={item.disabled ? undefined : item.action}
+            disabled={item.disabled}
+          >
+            <span>{item.label}</span>
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Types ─── */
 
 type EditorPaneProps = {
@@ -48,6 +125,9 @@ type EditorPaneProps = {
   activeTab: string | null;
   onSelectTab: (sourcePath: string) => void;
   onCloseTab: (sourcePath: string) => void;
+  onCloseOthers: (sourcePath: string) => void;
+  onCloseToRight: (sourcePath: string) => void;
+  onCloseAll: () => void;
   item: AnalysisItem | null;
   loading: boolean;
 };
@@ -60,10 +140,14 @@ export function EditorPane({
   activeTab,
   onSelectTab,
   onCloseTab,
+  onCloseOthers,
+  onCloseToRight,
+  onCloseAll,
   item,
   loading,
 }: EditorPaneProps) {
   const m = getMessages(lang).explorer;
+  const [tabMenu, setTabMenu] = useState<TabMenu>(null);
 
   const toBase64 = (value: string) => {
     if (typeof window === "undefined") return "";
@@ -104,6 +188,10 @@ export function EditorPane({
               <div
                 key={tab.sourcePath}
                 className={`editor-tab ${isActive ? "editor-tab--active" : ""}`}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setTabMenu({ x: e.clientX, y: e.clientY, sourcePath: tab.sourcePath });
+                }}
               >
                 <button
                   type="button"
@@ -127,6 +215,19 @@ export function EditorPane({
           })}
         </div>
       </div>
+
+      {/* Tab context menu */}
+      {tabMenu ? (
+        <TabContextMenu
+          menu={tabMenu}
+          tabs={tabs}
+          onClose={() => setTabMenu(null)}
+          onCloseTab={onCloseTab}
+          onCloseOthers={onCloseOthers}
+          onCloseToRight={onCloseToRight}
+          onCloseAll={onCloseAll}
+        />
+      ) : null}
 
       {/* Breadcrumb */}
       {breadcrumbs.length > 1 ? (

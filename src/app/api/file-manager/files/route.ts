@@ -5,7 +5,13 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const folderIdParam = searchParams.get("folder_id");
-    const folderId = folderIdParam === "null" || folderIdParam === "" ? null : folderIdParam;
+    // null (param absent) = return ALL files; "null" or "" = root only; uuid = specific folder
+    const folderId: string | null | undefined =
+      folderIdParam === null
+        ? undefined
+        : folderIdParam === "null" || folderIdParam === ""
+          ? null
+          : folderIdParam;
     const fileType = searchParams.get("file_type") ?? undefined;
     const search = searchParams.get("search") ?? undefined;
     const page = Number.parseInt(searchParams.get("page") || "1", 10);

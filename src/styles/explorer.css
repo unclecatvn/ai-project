@@ -355,6 +355,12 @@
   color: #fff;
 }
 
+.explorer-context-menu__item--disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
 .explorer-context-menu__divider {
   height: 1px;
   margin: 4px 8px;

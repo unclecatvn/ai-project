@@ -53,6 +53,7 @@ function FileIcon({ fileType }: { fileType: string }) {
 /* ─── Menu Icons ─── */
 
 const ICON = {
+  open: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>,
   newFile: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>,
   newFolder: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /><line x1="12" y1="11" x2="12" y2="17" /><line x1="9" y1="14" x2="15" y2="14" /></svg>,
   rename: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>,
@@ -71,10 +72,11 @@ const ICON = {
 
 type ContextMenuState = {
   visible: boolean;
-  x: number;
-  y: number;
+  x: number; // viewport clientX (fixed positioning)
+  y: number; // viewport clientY (fixed positioning)
   targetPath: string;
   targetKind: "file" | "folder";
+  isTabOpen?: boolean;
 } | null;
 
 type ExplorerSidebarProps = {
@@ -89,6 +91,8 @@ type ExplorerSidebarProps = {
   onDeleteFolder?: (folderPath: string) => Promise<void>;
   onRenameFile?: (fileId: string, oldPath: string, newName: string) => Promise<void>;
   itemsByPath?: Map<string, AnalysisItem>;
+  openTabs?: string[];
+  onCloseTabFromSidebar?: (sourcePath: string) => void;
 };
 
 /* ─── Inline Input ─── */
@@ -170,22 +174,30 @@ function ContextMenu({
   }, [onClose]);
 
   const isFolder = menu.targetKind === "folder";
+  const isTabOpen = menu.isTabOpen ?? false;
 
-  type MenuItem = { key: string; label: string; icon: ReactNode; divider?: boolean; danger?: boolean };
-  const items: MenuItem[] = [
-    ...(isFolder ? [
-      { key: "newFile", label: "New File", icon: ICON.newFile },
-      { key: "newFolder", label: "New Folder", icon: ICON.newFolder, divider: true },
-    ] : []),
-    { key: "rename", label: "Rename", icon: ICON.rename },
-    { key: "copyPath", label: "Copy Path", icon: ICON.copyPath, divider: true },
-    { key: "delete", label: "Delete", icon: ICON.delete, danger: true },
-  ];
+  type MenuItem = { key: string; label: string; icon: ReactNode; dividerBefore?: boolean; danger?: boolean };
+  const items: MenuItem[] = isFolder
+    ? [
+        { key: "newFile", label: "New File", icon: ICON.newFile },
+        { key: "newFolder", label: "New Folder", icon: ICON.newFolder },
+        { key: "rename", label: "Rename", icon: ICON.rename, dividerBefore: true },
+        { key: "delete", label: "Delete", icon: ICON.delete, danger: true },
+        { key: "copyPath", label: "Copy Path", icon: ICON.copyPath, dividerBefore: true },
+      ]
+    : [
+        { key: "open", label: "Open", icon: ICON.open },
+        ...(isTabOpen ? [{ key: "closeTab", label: "Close Tab", icon: ICON.close }] : []),
+        { key: "rename", label: "Rename", icon: ICON.rename, dividerBefore: true },
+        { key: "delete", label: "Delete", icon: ICON.delete, danger: true },
+        { key: "copyPath", label: "Copy Path", icon: ICON.copyPath, dividerBefore: true },
+      ];
 
   return (
-    <div ref={menuRef} className="explorer-context-menu" style={{ top: menu.y, left: menu.x }}>
+    <div ref={menuRef} className="explorer-context-menu" style={{ position: "fixed", top: menu.y, left: menu.x }}>
       {items.map((item) => (
         <div key={item.key}>
+          {item.dividerBefore ? <div className="explorer-context-menu__divider" /> : null}
           <button
             type="button"
             className={`explorer-context-menu__item ${item.danger ? "explorer-context-menu__item--danger" : ""}`}
@@ -194,7 +206,6 @@ function ContextMenu({
             {item.icon}
             <span>{item.label}</span>
           </button>
-          {item.divider ? <div className="explorer-context-menu__divider" /> : null}
         </div>
       ))}
     </div>
@@ -215,6 +226,8 @@ export function ExplorerSidebar({
   onDeleteFolder,
   onRenameFile,
   itemsByPath,
+  openTabs = [],
+  onCloseTabFromSidebar,
 }: ExplorerSidebarProps) {
   const m = getMessages(lang).explorer;
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
@@ -259,13 +272,30 @@ export function ExplorerSidebar({
   function showContextMenu(e: React.MouseEvent, node: ExplorerNode) {
     e.preventDefault();
     e.stopPropagation();
-    const rect = sidebarRef.current?.getBoundingClientRect();
+    // Use viewport coordinates with fixed positioning (avoids overflow:hidden clipping)
+    const menuWidth = 200;
+    const menuHeight = 220;
     setContextMenu({
       visible: true,
-      x: Math.min(e.clientX - (rect?.left ?? 0), (rect?.width ?? 280) - 180),
-      y: e.clientY - (rect?.top ?? 0),
+      x: Math.min(e.clientX, window.innerWidth - menuWidth),
+      y: Math.min(e.clientY, window.innerHeight - menuHeight),
       targetPath: node.path,
       targetKind: node.kind,
+      isTabOpen: node.kind === "file" && openTabs.includes(node.path),
+    });
+  }
+
+  function showRootContextMenu(e: React.MouseEvent) {
+    e.preventDefault();
+    const menuWidth = 200;
+    const menuHeight = 150;
+    setContextMenu({
+      visible: true,
+      x: Math.min(e.clientX, window.innerWidth - menuWidth),
+      y: Math.min(e.clientY, window.innerHeight - menuHeight),
+      targetPath: "",
+      targetKind: "folder",
+      isTabOpen: false,
     });
   }
 
@@ -275,11 +305,18 @@ export function ExplorerSidebar({
     setContextMenu(null);
 
     switch (action) {
+      case "open":
+        onFileSelect(targetPath);
+        break;
+      case "closeTab":
+        onCloseTabFromSidebar?.(targetPath);
+        break;
       case "newFile":
-        startCreateInFolder(targetPath, "file");
+        // targetPath "" means root level
+        startCreateInFolder(targetPath || null, "file");
         break;
       case "newFolder":
-        startCreateInFolder(targetPath, "folder");
+        startCreateInFolder(targetPath || null, "folder");
         break;
       case "rename":
         setRenameTarget(targetPath);
@@ -536,6 +573,7 @@ export function ExplorerSidebar({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onContextMenu={showRootContextMenu}
     >
       {/* Header */}
       <div className="explorer-sidebar__header">

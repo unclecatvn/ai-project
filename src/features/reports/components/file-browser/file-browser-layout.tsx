@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AnalysisItem } from "@/features/reports/lib/analysis";
 import { buildExplorerTree } from "@/features/reports/components/file-browser/helpers";
 import { ExplorerSidebar } from "@/features/reports/components/file-browser/folder-tree-panel";
 import { EditorPane } from "@/features/reports/components/file-browser/file-preview-pane";
 import type { AppLang } from "@/shared/i18n/resolve-language";
 import type { EditorTab } from "@/features/reports/components/file-browser/types";
+
+const LS_TABS = "explorer-tabs";
+const LS_ACTIVE = "explorer-active-tab";
 
 type FileBrowserLayoutProps = {
   items: AnalysisItem[];
@@ -21,6 +24,33 @@ export function FileBrowserLayout({ items: initialItems, lang }: FileBrowserLayo
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<AnalysisItem | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [isLsLoaded, setIsLsLoaded] = useState(false);
+  const prevTabsRef = useRef<EditorTab[]>([]);
+
+  /* ─── Persist tabs to localStorage ─── */
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem(LS_TABS);
+      const a = localStorage.getItem(LS_ACTIVE);
+      if (t) setTabs(JSON.parse(t) as EditorTab[]);
+      if (a) setActiveTab(a);
+    } catch { /* ignore */ }
+    setIsLsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isLsLoaded) return;
+    // Only save if tabs actually changed (avoid redundant writes)
+    if (JSON.stringify(tabs) === JSON.stringify(prevTabsRef.current)) return;
+    prevTabsRef.current = tabs;
+    localStorage.setItem(LS_TABS, JSON.stringify(tabs));
+  }, [tabs, isLsLoaded]);
+
+  useEffect(() => {
+    if (!isLsLoaded) return;
+    if (activeTab) localStorage.setItem(LS_ACTIVE, activeTab);
+    else localStorage.removeItem(LS_ACTIVE);
+  }, [activeTab, isLsLoaded]);
 
   /* ─── Derived ─── */
   const explorerTree = useMemo(() => buildExplorerTree(items, lang), [items, lang]);
@@ -138,6 +168,25 @@ export function FileBrowserLayout({ items: initialItems, lang }: FileBrowserLayo
     setActiveTab(sourcePath);
   }
 
+  function handleCloseOthers(sourcePath: string) {
+    setTabs((prev) => prev.filter((t) => t.sourcePath === sourcePath));
+    setActiveTab(sourcePath);
+  }
+
+  function handleCloseToRight(sourcePath: string) {
+    setTabs((prev) => {
+      const idx = prev.findIndex((t) => t.sourcePath === sourcePath);
+      if (idx === -1) return prev;
+      return prev.slice(0, idx + 1);
+    });
+    setActiveTab(sourcePath);
+  }
+
+  function handleCloseAll() {
+    setTabs([]);
+    setActiveTab(null);
+  }
+
   /** Delete a file by its ID (called from sidebar) */
   const handleDeleteFile = useCallback(async (fileId: string, sourcePath: string) => {
     try {
@@ -238,6 +287,8 @@ export function FileBrowserLayout({ items: initialItems, lang }: FileBrowserLayo
         onDeleteFolder={handleDeleteFolder}
         onRenameFile={handleRenameFile}
         itemsByPath={itemsByPath}
+        openTabs={tabs.map((t) => t.sourcePath)}
+        onCloseTabFromSidebar={handleCloseTab}
       />
       <EditorPane
         lang={lang}
@@ -245,6 +296,9 @@ export function FileBrowserLayout({ items: initialItems, lang }: FileBrowserLayo
         activeTab={activeTab}
         onSelectTab={handleSelectTab}
         onCloseTab={handleCloseTab}
+        onCloseOthers={handleCloseOthers}
+        onCloseToRight={handleCloseToRight}
+        onCloseAll={handleCloseAll}
         item={previewItem}
         loading={previewLoading}
       />
