@@ -10,9 +10,15 @@
     "prebuild": "node scripts/sync-analysis-files.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "skills": "node scripts/skills-cli.mjs",
+    "db:import": "node scripts/import-files-to-db.mjs",
+    "db:sync": "node scripts/sync-db-to-public.mjs",
+    "db:audit": "node scripts/db-baseline-audit.mjs",
+    "db:reset": "node scripts/db-reset-bootstrap.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
     "mermaid": "^11.12.3",
     "next": "16.1.6",
     "react": "19.2.3",

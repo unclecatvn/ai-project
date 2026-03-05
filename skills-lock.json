@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "read-github": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "69fec578094366755728c3b14ddeff19a546fb0c107d0eba24365f12a5578454"
+    },
     "supabase-postgres-best-practices": {
       "source": "supabase/agent-skills",
       "sourceType": "github",

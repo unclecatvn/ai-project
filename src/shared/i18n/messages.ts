@@ -6,6 +6,15 @@ type MessageSchema = {
     markdown: string;
     html: string;
   };
+  categories: {
+    all: string;
+    skills: string;
+    subagents: string;
+    rules: string;
+    commands: string;
+    markdown: string;
+    html: string;
+  };
   controls: {
     language: string;
     dark: string;
@@ -52,6 +61,12 @@ type MessageSchema = {
     actions: string;
     view: string;
     download: string;
+    openRaw: string;
+    copyPath: string;
+    sensitivity: string;
+    allSensitivity: string;
+    loadingPreview: string;
+    selectFilePreview: string;
     noFilesMatched: string;
   };
   markdown: {
@@ -74,7 +89,16 @@ type MessageSchema = {
 export const messages: Record<AppLang, MessageSchema> = {
   en: {
     common: {
-      appName: "Report Viewer",
+      appName: "AI File Manager",
+      markdown: "Markdown",
+      html: "HTML",
+    },
+    categories: {
+      all: "All",
+      skills: "Skills",
+      subagents: "Subagents",
+      rules: "Rules",
+      commands: "Commands",
       markdown: "Markdown",
       html: "HTML",
     },
@@ -86,11 +110,11 @@ export const messages: Record<AppLang, MessageSchema> = {
       english: "English",
     },
     home: {
-      title: "Analysis Report Viewer",
-      description: "List of Markdown/HTML files auto-scanned from the source project for quick local and Vercel preview.",
+      title: "AI File Manager",
+      description: "Centralized management for your AI resources: Skills, Subagents, Rules, Commands, and documents.",
       total: "Total",
       files: "files",
-      emptySync: "No files are synced yet. Run `npm run predev` again to refresh the list.",
+      emptySync: "No files are synced yet. Run `npm run predev` or call POST /api/files/sync to sync.",
     },
     reportPage: {
       back: "← Back to list",
@@ -124,6 +148,12 @@ export const messages: Record<AppLang, MessageSchema> = {
       actions: "Actions",
       view: "View",
       download: "Download",
+      openRaw: "Open raw",
+      copyPath: "Copy path",
+      sensitivity: "Sensitivity",
+      allSensitivity: "All sensitivity",
+      loadingPreview: "Loading preview...",
+      selectFilePreview: "Select a file to preview.",
       noFilesMatched: "No files match current filters.",
     },
     markdown: {
@@ -144,7 +174,16 @@ export const messages: Record<AppLang, MessageSchema> = {
   },
   vi: {
     common: {
-      appName: "Trình xem báo cáo",
+      appName: "Quản lý File AI",
+      markdown: "Markdown",
+      html: "HTML",
+    },
+    categories: {
+      all: "Tất cả",
+      skills: "Skills",
+      subagents: "Subagents",
+      rules: "Rules",
+      commands: "Commands",
       markdown: "Markdown",
       html: "HTML",
     },
@@ -156,11 +195,11 @@ export const messages: Record<AppLang, MessageSchema> = {
       english: "English",
     },
     home: {
-      title: "Trình xem báo cáo phân tích",
-      description: "Danh sách file Markdown/HTML được tự động quét từ project gốc để xem nhanh trên local và Vercel.",
+      title: "Quản lý File AI",
+      description: "Quản lý tập trung tài nguyên AI: Skills, Subagents, Rules, Commands và tài liệu.",
       total: "Tổng cộng",
       files: "file",
-      emptySync: "Chưa có file nào được đồng bộ. Hãy chạy lại `npm run predev` để cập nhật danh sách file.",
+      emptySync: "Chưa có file nào được đồng bộ. Hãy chạy `npm run predev` hoặc gọi POST /api/files/sync.",
     },
     reportPage: {
       back: "← Quay lại danh sách",
@@ -194,6 +233,12 @@ export const messages: Record<AppLang, MessageSchema> = {
       actions: "Thao tác",
       view: "Xem",
       download: "Tải",
+      openRaw: "Mở raw",
+      copyPath: "Copy đường dẫn",
+      sensitivity: "Độ nhạy",
+      allSensitivity: "Tất cả độ nhạy",
+      loadingPreview: "Đang tải preview...",
+      selectFilePreview: "Chọn file để xem trước.",
       noFilesMatched: "Không tìm thấy file phù hợp với bộ lọc hiện tại.",
     },
     markdown: {
@@ -203,7 +248,7 @@ export const messages: Record<AppLang, MessageSchema> = {
       loadingContent: "Đang tải nội dung...",
       tableOfContents: "Mục lục",
       displayMode: "Kiểu hiển thị",
-      rendered: "Bản dựng",
+      rendered: "Xem trước",
       raw: "Raw Markdown",
       copyMarkdown: "Copy Markdown",
       copyRaw: "Copy Raw",

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import { ReportMarkdown } from "@/features/reports/components/report-markdown";
-import { getAllAnalysisItems, getAnalysisItemById } from "@/features/reports/lib/analysis";
+import { getAnalysisItemBySourcePath } from "@/features/reports/lib/analysis";
 import { AppNavbar } from "@/shared/components/app-navbar";
 import { resolveLanguage } from "@/shared/i18n/resolve-language";
 import { getMessages } from "@/shared/i18n/messages";
@@ -13,10 +13,6 @@ type ReportPageProps = {
   searchParams?: Promise<{ lang?: string }>;
 };
 
-export function generateStaticParams() {
-  return getAllAnalysisItems().map((item) => ({ slug: item.id }));
-}
-
 export default async function ReportPage({ params, searchParams }: ReportPageProps) {
   const { slug } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
@@ -25,7 +21,8 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
   const lang = resolveLanguage(resolvedSearchParams.lang, headerStore.get("accept-language"), cookieStore.get("NEXT_LOCALE")?.value ?? null);
   const initialTheme = resolveTheme(cookieStore.get(THEME_COOKIE_KEY)?.value ?? null);
   const m = getMessages(lang);
-  const report = getAnalysisItemById(decodeURIComponent(slug));
+  const sourcePath = decodeURIComponent(slug);
+  const report = await getAnalysisItemBySourcePath(sourcePath);
 
   if (!report) {
     notFound();
@@ -58,7 +55,11 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
             {report.sourcePath}
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <a href={report.publicPath} download={report.fileName} className="app-button-primary inline-flex items-center gap-2 px-4 py-2 text-sm font-medium">
+            <a
+              href={`/api/file-manager/files/download?source_path=${encodeURIComponent(report.sourcePath)}&download=1`}
+              download={report.fileName}
+              className="app-button-primary inline-flex items-center gap-2 px-4 py-2 text-sm font-medium"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="7 10 12 15 17 10" />
@@ -67,7 +68,7 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
               {m.reportPage.downloadFile}
             </a>
             <a
-              href={report.publicPath}
+              href={`/api/file-manager/files/download?source_path=${encodeURIComponent(report.sourcePath)}&download=0`}
               target="_blank"
               rel="noopener noreferrer"
               className="app-button-secondary inline-flex items-center gap-2 px-4 py-2 text-sm font-medium"
@@ -85,15 +86,23 @@ export default async function ReportPage({ params, searchParams }: ReportPagePro
         <div className="mt-6">
           {report.type === "html" ? (
             <iframe
-              src={report.publicPath}
+              srcDoc={report.content ?? ""}
               title={report.title}
               className="app-card h-[80vh] w-full"
+              sandbox="allow-scripts"
             />
+          ) : report.content ? (
+            <MarkdownFromContent content={report.content} lang={lang} />
           ) : (
-            <ReportMarkdown publicPath={report.publicPath} lang={lang} />
+            <p className="app-text-soft text-sm">No content available.</p>
           )}
         </div>
       </div>
     </main>
   );
+}
+
+function MarkdownFromContent({ content, lang }: { content: string; lang: "vi" | "en" }) {
+  const dataUrl = `data:text/markdown;base64,${Buffer.from(content).toString("base64")}`;
+  return <ReportMarkdown publicPath={dataUrl} lang={lang} />;
 }

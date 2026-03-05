@@ -164,6 +164,11 @@ function getMermaidThemeConfig(theme: "light" | "dark") {
 function MermaidBlock({ chart, lang, theme }: { chart: string; lang: "vi" | "en"; theme: "light" | "dark" }) {
   const [svg, setSvg] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const m = getMessages(lang).markdown;
 
   useEffect(() => {
@@ -189,6 +194,20 @@ function MermaidBlock({ chart, lang, theme }: { chart: string; lang: "vi" | "en"
         if (!ignore) {
           setError("");
           setSvg(nextSvg);
+          setZoom(1);
+          setPan({ x: 0, y: 0 });
+          // Auto-fit after render
+          setTimeout(() => {
+            if (!containerRef.current || ignore) return;
+            const svgEl = containerRef.current.querySelector("svg");
+            if (!svgEl) return;
+            const containerWidth = containerRef.current.clientWidth - 32;
+            const svgWidth = svgEl.scrollWidth || svgEl.getBoundingClientRect().width;
+            if (svgWidth > 0) {
+              const fitZoom = Math.min(containerWidth / svgWidth, 2);
+              setZoom(Math.max(0.3, fitZoom));
+            }
+          }, 50);
         }
       } catch (renderError) {
         if (!ignore) {
@@ -204,6 +223,41 @@ function MermaidBlock({ chart, lang, theme }: { chart: string; lang: "vi" | "en"
     };
   }, [chart, theme]);
 
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setZoom((prev) => Math.max(0.2, Math.min(5, prev + delta)));
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    setIsPanning(true);
+    setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  }, [pan]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isPanning) return;
+    setPan({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
+  }, [isPanning, panStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  const handleZoomIn = () => setZoom((prev) => Math.min(5, prev + 0.25));
+  const handleZoomOut = () => setZoom((prev) => Math.max(0.2, prev - 0.25));
+  const handleReset = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
+  const handleFit = () => {
+    if (!containerRef.current) return;
+    const svgEl = containerRef.current.querySelector("svg");
+    if (!svgEl) return;
+    const containerWidth = containerRef.current.clientWidth - 32;
+    const svgWidth = svgEl.getBoundingClientRect().width / zoom;
+    const fitZoom = Math.min(containerWidth / svgWidth, 2);
+    setZoom(Math.max(0.2, fitZoom));
+    setPan({ x: 0, y: 0 });
+  };
+
   if (error) {
     return <div className="app-warning rounded-lg p-4 text-sm">{m.cannotRenderMermaid} {error}</div>;
   }
@@ -212,7 +266,47 @@ function MermaidBlock({ chart, lang, theme }: { chart: string; lang: "vi" | "en"
     return <p className="app-text-soft text-sm">{m.renderingDiagram}</p>;
   }
 
-  return <div className="mermaid-diagram app-card overflow-x-auto p-3" dangerouslySetInnerHTML={{ __html: svg }} />;
+  return (
+    <div className="mermaid-container app-card" ref={containerRef}>
+      <div className="mermaid-toolbar">
+        <span className="mermaid-toolbar__label">Diagram</span>
+        <div className="mermaid-toolbar__actions">
+          <button type="button" onClick={handleZoomOut} className="mermaid-toolbar__btn" title="Zoom out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </button>
+          <span className="mermaid-toolbar__zoom">{Math.round(zoom * 100)}%</span>
+          <button type="button" onClick={handleZoomIn} className="mermaid-toolbar__btn" title="Zoom in">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </button>
+          <div className="mermaid-toolbar__divider" />
+          <button type="button" onClick={handleFit} className="mermaid-toolbar__btn" title="Fit to width">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+          <button type="button" onClick={handleReset} className="mermaid-toolbar__btn" title="Reset">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div
+        className="mermaid-viewport"
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{ cursor: isPanning ? "grabbing" : "grab" }}
+      >
+        <div
+          className="mermaid-diagram"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: "center center",
+          }}
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      </div>
+    </div>
+  );
 }
 
 function parseFrontmatter(rawText: string): { frontmatter: FrontmatterData; body: string } {
@@ -425,6 +519,9 @@ export function ReportMarkdown({ publicPath, lang }: ReportMarkdownProps) {
       return;
     }
 
+    // Find the scroll container (.editor-content or window)
+    const scrollEl = articleRef.current?.closest(".editor-content") as HTMLElement | null;
+
     let ticking = false;
     const updateActiveHeading = () => {
       const pivot = ANCHOR_OFFSET_PX + 8;
@@ -450,9 +547,10 @@ export function ReportMarkdown({ publicPath, lang }: ReportMarkdownProps) {
       window.requestAnimationFrame(updateActiveHeading);
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const target = scrollEl ?? window;
+    target.addEventListener("scroll", onScroll, { passive: true });
     updateActiveHeading();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => target.removeEventListener("scroll", onScroll);
   }, [tocItems]);
 
   function handleTocClick(event: MouseEvent<HTMLAnchorElement>, id: string) {
@@ -461,8 +559,16 @@ export function ReportMarkdown({ publicPath, lang }: ReportMarkdownProps) {
     if (!target) {
       return;
     }
-    const top = target.getBoundingClientRect().top + window.scrollY - ANCHOR_OFFSET_PX;
-    window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    const scrollEl = articleRef.current?.closest(".editor-content") as HTMLElement | null;
+    if (scrollEl) {
+      const containerTop = scrollEl.getBoundingClientRect().top;
+      const headingTop = target.getBoundingClientRect().top;
+      const offset = scrollEl.scrollTop + headingTop - containerTop - 20;
+      scrollEl.scrollTo({ top: Math.max(offset, 0), behavior: "smooth" });
+    } else {
+      const top = target.getBoundingClientRect().top + window.scrollY - ANCHOR_OFFSET_PX;
+      window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+    }
     window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
     setActiveHeadingId(id);
   }
@@ -480,16 +586,14 @@ export function ReportMarkdown({ publicPath, lang }: ReportMarkdownProps) {
 
   function renderTocList() {
     return (
-      <ul className="space-y-0.5">
+      <ul className="toc-list">
         {tocItems.map((item) => (
           <li key={item.id} className={`toc-level-${item.level}`}>
             <a
               href={`#${item.id}`}
               onClick={(event) => handleTocClick(event, item.id)}
               aria-current={activeHeadingId === item.id ? "true" : undefined}
-              className={`toc-link block rounded-md px-2.5 py-1.5 text-sm transition-colors ${
-                activeHeadingId === item.id ? "font-semibold" : "app-text-muted app-hover-muted"
-              }`}
+              className="toc-link"
             >
               {item.text}
             </a>
@@ -517,11 +621,11 @@ export function ReportMarkdown({ publicPath, lang }: ReportMarkdownProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      {tocItems.length > 0 ? (
-        <aside className="toc-panel app-card hidden p-4 lg:block">
-          <p className="app-text-soft mb-3 text-xs font-bold uppercase tracking-wider">{m.tableOfContents}</p>
-          <nav>{renderTocList()}</nav>
+    <div className={viewMode === "rendered" && tocItems.length > 0 ? "grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]" : ""}>
+      {viewMode === "rendered" && tocItems.length > 0 ? (
+        <aside className="toc-panel">
+          <div className="toc-panel__header">{m.tableOfContents}</div>
+          <nav className="toc-panel__nav">{renderTocList()}</nav>
         </aside>
       ) : null}
 
@@ -578,7 +682,7 @@ export function ReportMarkdown({ publicPath, lang }: ReportMarkdownProps) {
             {content}
           </ReactMarkdown>
         ) : (
-          <pre className="app-muted app-text-muted overflow-x-auto rounded-xl border border-(--ui-border) p-4 text-sm">
+          <pre className="raw-markdown-view">
             <code>{rawContent}</code>
           </pre>
         )}
